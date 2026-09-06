@@ -1,0 +1,13 @@
+import 'package:flutter/material.dart';
+
+class CustomerScreen extends StatelessWidget {
+  const CustomerScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Customer')),
+      body: const Center(child: Text('Customer — coming soon')),
+    );
+  }
+}
