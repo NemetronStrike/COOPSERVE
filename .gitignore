@@ -1,0 +1,56 @@
+# ── Flutter / Dart ──────────────────────────────────────────────────────────
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# ── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+*.egg
+.eggs/
+pip-wheel-metadata/
+
+# ── FastAPI / Uvicorn ────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── PostgreSQL ───────────────────────────────────────────────────────────────
+*.sql.bak
+pgdata/
+
+# ── ML / scikit-learn ────────────────────────────────────────────────────────
+*.pkl
+*.joblib
+*.h5
+*.model
+mlruns/
+notebooks/.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editors ──────────────────────────────────────────────────────────────────
+.vscode/settings.json
+*.swp
+*.swo
+test_android/
