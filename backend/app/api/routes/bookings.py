@@ -11,6 +11,7 @@ from app.services.booking_service import (
     customer_bookings,
     update_booking_status,
     worker_bookings,
+    cancel_customer_booking,
 )
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
@@ -58,3 +59,12 @@ def status_update(
     user: User = Depends(require_worker),
 ) -> BookingSummary:
     return update_booking_status(db, user, booking_id, request.status)
+
+
+@router.patch("/{booking_id}/cancel", response_model=BookingSummary)
+def cancel_booking(
+    booking_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_customer),
+) -> BookingSummary:
+    return cancel_customer_booking(db, user, booking_id)

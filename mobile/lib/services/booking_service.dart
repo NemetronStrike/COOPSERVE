@@ -53,6 +53,12 @@ class BookingService {
     return Booking.fromJson(response);
   }
 
+  Future<Booking> cancelBooking(int bookingId) async {
+    final token = await _authService.getToken();
+    final response = await ApiClient.patch('/bookings/$bookingId/cancel', {}, token: token);
+    return Booking.fromJson(response);
+  }
+
   Future<PaymentRecord> payForBooking(int bookingId) async {
     final token = await _authService.getToken();
     final response = await ApiClient.post('/payments', {
@@ -134,10 +140,6 @@ class BookingService {
         return 'completed';
       case BookingStatus.cancelled:
         return 'cancelled';
-      case BookingStatus.confirmed:
-        return 'confirmed';
-      case BookingStatus.disputed:
-        return 'disputed';
     }
   }
 }

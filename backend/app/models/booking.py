@@ -10,11 +10,9 @@ from app.models.base import Base
 class BookingStatus(str, enum.Enum):
     pending = "pending"
     accepted = "accepted"
-    confirmed = "confirmed"
     in_progress = "in_progress"
     completed = "completed"
     cancelled = "cancelled"
-    disputed = "disputed"
 
 
 class Booking(Base):

@@ -178,3 +178,25 @@ def update_booking_status(db: Session, user: User, booking_id: int, new_status: 
             ))
             db.commit()
     return _summary(booking)
+
+
+def cancel_customer_booking(db: Session, user: User, booking_id: int) -> BookingSummary:
+    customer_id = _customer_id(user)
+    booking = get_booking(db, booking_id)
+    if booking is None or booking.customer_id != customer_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found")
+    if booking.status not in {BookingStatus.pending, BookingStatus.accepted}:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only pending or accepted bookings can be cancelled")
+    booking.status = BookingStatus.cancelled
+    db.commit()
+    db.refresh(booking)
+    if booking.worker and booking.worker.user:
+        db.add(Notification(
+            user_id=booking.worker.user_id,
+            title="Booking cancelled",
+            message=f"Booking #{booking.id} has been cancelled by the customer.",
+            type="booking_cancelled",
+            related_booking_id=booking.id,
+        ))
+        db.commit()
+    return _summary(booking)

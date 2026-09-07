@@ -5,6 +5,7 @@ import '../../core/app_text_styles.dart';
 import '../../models/service_listing.dart';
 import '../../navigation/app_router.dart';
 import '../../services/customer_service.dart';
+import '../../services/ai_service.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_empty_state.dart';
 import '../../widgets/app_error_state.dart';
@@ -13,12 +14,15 @@ import '../../widgets/app_loading.dart';
 class ServiceCatalogScreen extends StatefulWidget {
   final Future<List<ServiceListing>> Function({String? search, String? category})
       loadServices;
+  final Future<Map<String, dynamic>> Function(String query) aiSearch;
 
   ServiceCatalogScreen({
     super.key,
     Future<List<ServiceListing>> Function({String? search, String? category})?
         loadServices,
-  }) : loadServices = loadServices ?? CustomerService().getAllServices;
+    Future<Map<String, dynamic>> Function(String query)? aiSearch,
+  }) : loadServices = loadServices ?? CustomerService().getAllServices,
+       aiSearch = aiSearch ?? AIService().searchServices;
 
   @override
   State<ServiceCatalogScreen> createState() => _ServiceCatalogScreenState();
@@ -30,6 +34,7 @@ class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
   List<String> _categories = const ['All'];
   bool _isLoading = true;
   String? _errorMessage;
+  String? _aiInterpretation;
   String _selectedCategory = 'All';
 
   @override
@@ -48,6 +53,7 @@ class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _aiInterpretation = null;
     });
     try {
       final services = await widget.loadServices(
@@ -71,6 +77,38 @@ class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
         _isLoading = false;
         _errorMessage = 'We could not load services right now.';
       });
+    }
+  }
+
+  Future<void> _performAiSearch() async {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) {
+      _loadServices();
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+      _aiInterpretation = null;
+    });
+
+    try {
+      final result = await widget.aiSearch(query);
+      if (!mounted) return;
+
+      final servicesJson = result['services'] as List;
+      final servicesList = servicesJson.map((json) => ServiceListing.fromJson(json)).toList();
+
+      setState(() {
+        _services = servicesList;
+        _aiInterpretation = result['interpretation'];
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      // Fallback to normal search
+      _loadServices(search: query, category: _selectedCategory == 'All' ? null : _selectedCategory);
     }
   }
 
@@ -102,11 +140,41 @@ class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
           TextField(
             controller: _searchController,
             onChanged: _onSearchChanged,
-            decoration: const InputDecoration(
-              hintText: 'Search by name or description',
-              prefixIcon: Icon(Icons.search_rounded),
+            onSubmitted: (_) => _performAiSearch(),
+            decoration: InputDecoration(
+              hintText: 'Describe what you need in natural language...',
+              prefixIcon: const Icon(Icons.auto_awesome), // AI icon
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.search_rounded),
+                onPressed: _performAiSearch,
+              ),
             ),
           ),
+          if (_aiInterpretation != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.infoLight,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.auto_awesome, size: 16, color: AppColors.brand),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'AI: $_aiInterpretation',
+                      style: AppTextStyles.bodyMedium(context).copyWith(
+                        color: AppColors.brandDark,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: AppSpacing.lg),
           Text('Categories', style: AppTextStyles.titleLarge(context)),
           const SizedBox(height: AppSpacing.sm),

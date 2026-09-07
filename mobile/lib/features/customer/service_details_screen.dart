@@ -8,6 +8,7 @@ import '../../models/booking_models.dart';
 import '../../models/worker_profile.dart';
 import '../../navigation/app_router.dart';
 import '../../services/customer_service.dart';
+import '../../services/ai_service.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_error_state.dart';
@@ -37,7 +38,9 @@ class ServiceDetailsScreen extends StatefulWidget {
 class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   ServiceListing? _service;
   List<WorkerProfile> _workers = const [];
+  List<AIWorkerMatch>? _aiMatches;
   bool _workersLoading = true;
+  bool _aiLoading = false;
   String? _workersError;
   String? _errorMessage;
 
@@ -73,10 +76,35 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
         _workersLoading = false;
       });
     } catch (_) {
-      if (!mounted) return;
       setState(() {
         _workersLoading = false;
         _workersError = 'We could not load available workers.';
+      });
+    }
+  }
+
+  Future<void> _performAiMatch() async {
+    if (_service == null) return;
+
+    setState(() {
+      _aiLoading = true;
+      _aiMatches = null;
+    });
+
+    try {
+      final matches = await AIService().matchWorkers(_service!.id);
+      if (!mounted) return;
+      setState(() {
+        _aiMatches = matches;
+        _aiLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _aiLoading = false;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to get AI matches')),
+        );
       });
     }
   }
@@ -169,9 +197,107 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
               'No verified workers are available for this service yet.',
             ),
           )
-        else
+        else ...[
+          if (_aiMatches == null)
+            AppButtonOutlined(
+              label: 'Find Best Match with AI ✨',
+              onPressed: _aiLoading ? null : _performAiMatch,
+            ),
+          if (_aiLoading)
+            const Padding(
+              padding: EdgeInsets.all(AppSpacing.md),
+              child: AppLoading(message: 'AI is analyzing profiles...'),
+            ),
+          if (_aiMatches != null) ...[
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              margin: const EdgeInsets.only(bottom: AppSpacing.md, top: AppSpacing.md),
+              decoration: BoxDecoration(
+                color: AppColors.infoLight,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.brand.withAlpha(50)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.auto_awesome, color: AppColors.brand),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text('AI Top Matches', style: AppTextStyles.titleMedium(context)),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  ..._aiMatches!.map((match) => _buildAiMatchCard(context, match)),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text('All Available Workers', style: AppTextStyles.titleMedium(context)),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+          if (_aiMatches == null)
+            const SizedBox(height: AppSpacing.md),
+
           ..._workers.map((worker) => _buildWorkerCard(context, worker)),
+        ],
       ],
+    );
+  }
+
+  Widget _buildAiMatchCard(BuildContext context, AIWorkerMatch match) {
+    // Find full worker profile
+    final worker = _workers.firstWhere((w) => w.id == match.id, orElse: () => _workers.first);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AppCard(
+        onTap: () => Navigator.pushNamed(
+          context,
+          AppRouter.workerDetails,
+          arguments: BookingSelection(service: _service!, worker: worker),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: AppColors.brand.withAlpha(28),
+                  child: const Icon(Icons.person_rounded, color: AppColors.brand),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(match.name, style: AppTextStyles.titleMedium(context)),
+                      Text('Match Score: ${match.matchScore.toStringAsFixed(1)}/100',
+                           style: const TextStyle(color: AppColors.brand, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text('Why they are a good fit:', style: AppTextStyles.labelLarge(context)),
+            Text(match.explanation, style: AppTextStyles.bodyMedium(context)),
+            const SizedBox(height: AppSpacing.sm),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => Navigator.pushNamed(
+                  context,
+                  AppRouter.workerDetails,
+                  arguments: BookingSelection(service: _service!, worker: worker),
+                ),
+                child: const Text('View Profile'),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

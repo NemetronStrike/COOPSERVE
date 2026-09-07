@@ -40,3 +40,35 @@ class WorkerProfile {
     );
   }
 }
+
+class AIWorkerMatch {
+  final int id;
+  final String name;
+  final double matchScore;
+  final String explanation;
+  final double averageRating;
+  final int yearsOfExperience;
+  final int totalJobs;
+
+  const AIWorkerMatch({
+    required this.id,
+    required this.name,
+    required this.matchScore,
+    required this.explanation,
+    required this.averageRating,
+    required this.yearsOfExperience,
+    required this.totalJobs,
+  });
+
+  factory AIWorkerMatch.fromJson(Map<String, dynamic> json) {
+    return AIWorkerMatch(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      matchScore: (json['match_score'] as num).toDouble(),
+      explanation: json['explanation'] as String,
+      averageRating: (json['average_rating'] as num).toDouble(),
+      yearsOfExperience: json['years_of_experience'] as int,
+      totalJobs: json['total_jobs'] as int,
+    );
+  }
+}

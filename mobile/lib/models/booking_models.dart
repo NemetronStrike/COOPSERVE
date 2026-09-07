@@ -7,8 +7,6 @@ enum BookingStatus {
   inProgress,
   completed,
   cancelled,
-  confirmed,
-  disputed,
 }
 
 BookingStatus bookingStatusFromString(String value) {
@@ -21,10 +19,6 @@ BookingStatus bookingStatusFromString(String value) {
       return BookingStatus.completed;
     case 'cancelled':
       return BookingStatus.cancelled;
-    case 'confirmed':
-      return BookingStatus.confirmed;
-    case 'disputed':
-      return BookingStatus.disputed;
     default:
       return BookingStatus.pending;
   }
@@ -43,10 +37,6 @@ extension BookingStatusLabel on BookingStatus {
         return 'Completed';
       case BookingStatus.cancelled:
         return 'Cancelled';
-      case BookingStatus.confirmed:
-        return 'Confirmed';
-      case BookingStatus.disputed:
-        return 'Disputed';
     }
   }
 }

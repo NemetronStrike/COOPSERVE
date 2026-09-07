@@ -146,6 +146,45 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               ),
             ),
         ],
+        if (booking.status == BookingStatus.pending || booking.status == BookingStatus.accepted) ...[
+          const SizedBox(height: AppSpacing.md),
+          AppButtonOutlined(
+            label: 'Cancel Booking',
+            onPressed: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Cancel Booking'),
+                  content: const Text('Are you sure you want to cancel this booking?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('No'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Yes, Cancel'),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirm == true) {
+                try {
+                  setState(() => _booking = null); // Show loading
+                  final updated = await BookingService().cancelBooking(booking.id);
+                  if (mounted) setState(() => _booking = updated);
+                } catch (error) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to cancel: ${error.toString().replaceFirst('Exception: ', '')}')),
+                  );
+                  _loadBooking();
+                }
+              }
+            },
+          ),
+        ],
       ],
     );
   }

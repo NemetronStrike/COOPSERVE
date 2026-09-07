@@ -385,6 +385,7 @@ void main() {
               return matchesSearch && matchesCategory;
             }).toList();
           },
+          aiSearch: (query) async => {'interpretation': 'test', 'services': []},
         ),
       ),
     );
@@ -409,6 +410,7 @@ void main() {
         home: ServiceCatalogScreen(
           loadServices: ({search, category}) async =>
               search == null ? [_testService()] : [],
+          aiSearch: (query) async => {'interpretation': 'test', 'services': []},
         ),
       ),
     );
@@ -416,7 +418,9 @@ void main() {
     await tester.pump();
 
     await tester.enterText(find.byType(TextField), 'does not exist');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('No services found'), findsOneWidget);
     expect(find.text('Try a different search or category.'), findsOneWidget);
