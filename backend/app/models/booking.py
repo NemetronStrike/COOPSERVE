@@ -9,6 +9,7 @@ from app.models.base import Base
 
 class BookingStatus(str, enum.Enum):
     pending = "pending"
+    accepted = "accepted"
     confirmed = "confirmed"
     in_progress = "in_progress"
     completed = "completed"
@@ -36,9 +37,11 @@ class Booking(Base):
         Enum(BookingStatus), default=BookingStatus.pending, nullable=False, index=True
     )
     scheduled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    scheduled_end_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    service_address: Mapped[str | None] = mapped_column(String(500))
     notes: Mapped[str | None] = mapped_column(Text)
     cancellation_reason: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(
