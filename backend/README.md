@@ -75,6 +75,16 @@ The command safely inserts or updates the eight sample services. Catalog reads
 are available at `GET /services`, with optional `search` and `category` query
 parameters, and `GET /services/{service_id}` for details.
 
+To populate the repeatable worker discovery demo data:
+
+```bash
+python -m scripts.seed_workers
+```
+
+This safely inserts or updates eight worker profiles and their service skills.
+Worker discovery is available at `GET /workers`, optionally filtered with
+`service_id`, and `GET /workers/{worker_id}` for worker details.
+
 ## Project Structure
 
 ```

@@ -5,8 +5,10 @@ import 'package:coopserve/features/auth/screens/splash_screen.dart';
 import 'package:coopserve/features/customer/customer_screen.dart';
 import 'package:coopserve/features/customer/service_catalog_screen.dart';
 import 'package:coopserve/features/customer/service_details_screen.dart';
+import 'package:coopserve/features/customer/worker_details_screen.dart';
 import 'package:coopserve/models/service_listing.dart';
 import 'package:coopserve/models/user_role.dart';
+import 'package:coopserve/models/worker_profile.dart';
 import 'package:coopserve/navigation/app_router.dart';
 
 void main() {
@@ -80,13 +82,33 @@ void main() {
         home: ServiceDetailsScreen(
           serviceId: service.id,
           loadService: (_) async => service,
+          loadWorkers: (_) async => [_testWorker()],
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byType(ServiceDetailsScreen), findsOneWidget);
+    expect(find.text('Available Workers'), findsOneWidget);
+    expect(find.text('Aarav Sharma'), findsOneWidget);
+  });
+
+  testWidgets('Worker details renders selected worker information',
+      (tester) async {
+    final worker = _testWorker();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: WorkerDetailsScreen(
+          workerId: worker.id,
+          loadWorker: (_) async => worker,
         ),
       ),
     );
     await tester.pump();
 
-    expect(find.byType(ServiceDetailsScreen), findsOneWidget);
-    expect(find.text('Continue to booking'), findsOneWidget);
+    expect(find.text(worker.name), findsOneWidget);
+    expect(find.text('Verified cooperative worker'), findsOneWidget);
   });
 
   testWidgets('Service catalog combines search and category filters',
@@ -178,5 +200,20 @@ ServiceListing _testService({
     rating: 4.8,
     reviewCount: 12,
     iconName: 'cleaning',
+  );
+}
+
+WorkerProfile _testWorker() {
+  return const WorkerProfile(
+    id: 1,
+    userId: 1,
+    name: 'Aarav Sharma',
+    bio: 'Experienced home-care professional.',
+    skills: ['Home Cleaning'],
+    experienceYears: 6,
+    rating: 4.8,
+    completedJobs: 142,
+    isAvailable: true,
+    isVerified: true,
   );
 }

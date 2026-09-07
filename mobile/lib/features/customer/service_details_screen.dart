@@ -3,6 +3,8 @@ import '../../core/app_colors.dart';
 import '../../core/app_spacing.dart';
 import '../../core/app_text_styles.dart';
 import '../../models/service_listing.dart';
+import '../../models/worker_profile.dart';
+import '../../navigation/app_router.dart';
 import '../../services/customer_service.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_card.dart';
@@ -12,12 +14,19 @@ import '../../widgets/app_loading.dart';
 class ServiceDetailsScreen extends StatefulWidget {
   final int serviceId;
   final Future<ServiceListing> Function(int serviceId) loadService;
+  final Future<List<WorkerProfile>> Function(int serviceId) loadWorkers;
 
   ServiceDetailsScreen({
     super.key,
     required this.serviceId,
     Future<ServiceListing> Function(int serviceId)? loadService,
-  }) : loadService = loadService ?? CustomerService().getServiceDetails;
+    Future<List<WorkerProfile>> Function(int serviceId)? loadWorkers,
+  })  : loadService = loadService ?? CustomerService().getServiceDetails,
+        loadWorkers = loadWorkers ?? _defaultLoadWorkers;
+
+  static Future<List<WorkerProfile>> _defaultLoadWorkers(int serviceId) {
+    return CustomerService().getWorkers(serviceId: serviceId);
+  }
 
   @override
   State<ServiceDetailsScreen> createState() => _ServiceDetailsScreenState();
@@ -25,6 +34,9 @@ class ServiceDetailsScreen extends StatefulWidget {
 
 class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   ServiceListing? _service;
+  List<WorkerProfile> _workers = const [];
+  bool _workersLoading = true;
+  String? _workersError;
   String? _errorMessage;
 
   @override
@@ -39,9 +51,31 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       final service = await widget.loadService(widget.serviceId);
       if (!mounted) return;
       setState(() => _service = service);
+      await _loadWorkers(service.id);
     } catch (_) {
       if (!mounted) return;
       setState(() => _errorMessage = 'We could not load this service.');
+    }
+  }
+
+  Future<void> _loadWorkers(int serviceId) async {
+    setState(() {
+      _workersLoading = true;
+      _workersError = null;
+    });
+    try {
+      final workers = await widget.loadWorkers(serviceId);
+      if (!mounted) return;
+      setState(() {
+        _workers = workers;
+        _workersLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _workersLoading = false;
+        _workersError = 'We could not load available workers.';
+      });
     }
   }
 
@@ -99,6 +133,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
             style: AppTextStyles.bodyMedium(context),
           ),
           const SizedBox(height: AppSpacing.xl),
+          _buildAvailableWorkers(context, service.id),
+          const SizedBox(height: AppSpacing.lg),
           AppButton(
             label: 'Continue to booking',
             onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
@@ -107,6 +143,96 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           ),
         ],
       );
+  }
+
+  Widget _buildAvailableWorkers(BuildContext context, int serviceId) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Available Workers', style: AppTextStyles.titleLarge(context)),
+        const SizedBox(height: AppSpacing.sm),
+        if (_workersLoading)
+          const AppLoading(message: 'Finding available workers')
+        else if (_workersError != null)
+          AppErrorState(
+            message: _workersError!,
+            retryLabel: 'Retry workers',
+            onRetry: () => _loadWorkers(serviceId),
+          )
+        else if (_workers.isEmpty)
+          const AppCard(
+            child: Text('No verified workers are available for this service yet.'),
+          )
+        else
+          ..._workers.map((worker) => _buildWorkerCard(context, worker)),
+      ],
+    );
+  }
+
+  Widget _buildWorkerCard(BuildContext context, WorkerProfile worker) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AppCard(
+        onTap: () => Navigator.pushNamed(
+          context,
+          AppRouter.workerDetails,
+          arguments: worker.id,
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: AppColors.customerAccent.withAlpha(28),
+              child: Icon(Icons.person_rounded, color: AppColors.customerAccent),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(worker.name,
+                            style: AppTextStyles.titleMedium(context)),
+                      ),
+                      if (worker.isVerified)
+                        const Icon(Icons.verified_rounded,
+                            size: 18, color: AppColors.success),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(worker.skills.join(' • '),
+                      style: AppTextStyles.bodySmall(context)),
+                  const SizedBox(height: AppSpacing.sm),
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.xs,
+                    children: [
+                      Text('★ ${worker.rating.toStringAsFixed(1)}'),
+                      Text('${worker.completedJobs} jobs'),
+                      Text(worker.isAvailable ? 'Available' : 'Unavailable'),
+                    ],
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                      onPressed: () => Navigator.pushNamed(
+                        context,
+                        AppRouter.workerDetails,
+                        arguments: worker.id,
+                      ),
+                      child: const Text('Select Worker'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            const Icon(Icons.chevron_right_rounded),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _serviceIcon(ServiceListing service) {

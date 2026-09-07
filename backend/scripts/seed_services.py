@@ -58,6 +58,12 @@ DEMO_SERVICES = (
         "category": "Maintenance",
         "base_price": Decimal("499.00"),
     },
+    {
+        "name": "Gardening",
+        "description": "Keep your outdoor spaces healthy and welcoming.",
+        "category": "Home Care",
+        "base_price": Decimal("449.00"),
+    },
 )
 
 

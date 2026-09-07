@@ -6,6 +6,7 @@ import '../features/auth/screens/register_screen.dart';
 import '../features/customer/customer_screen.dart';
 import '../features/customer/service_catalog_screen.dart';
 import '../features/customer/service_details_screen.dart';
+import '../features/customer/worker_details_screen.dart';
 import '../features/worker/worker_screen.dart';
 import '../features/admin/admin_screen.dart';
 import '../models/user_role.dart';
@@ -19,6 +20,7 @@ class AppRouter {
   static const String customer = '/customer';
   static const String serviceCatalog = '/customer/services';
   static const String serviceDetails = '/customer/services/details';
+  static const String workerDetails = '/customer/workers/details';
   static const String worker = '/worker';
   static const String admin = '/admin';
 
@@ -53,6 +55,13 @@ class AppRouter {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => ServiceDetailsScreen(serviceId: service),
+        );
+      case workerDetails:
+        final workerId = settings.arguments;
+        if (workerId is! int || workerId < 1) return null;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => WorkerDetailsScreen(workerId: workerId),
         );
       default:
         return null;
