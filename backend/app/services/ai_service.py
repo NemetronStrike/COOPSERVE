@@ -19,12 +19,12 @@ if settings.gemini_api_key:
     except Exception as e:
         logger.warning(f"Failed to configure Gemini API: {e}")
 
-def _get_model(model_name: str = "gemini-1.5-flash") -> genai.GenerativeModel:
+def _get_model(model_name: str = "gemini-flash-latest") -> genai.GenerativeModel:
     if not _gemini_client_configured:
         raise RuntimeError("Gemini API is not configured. Missing GEMINI_API_KEY.")
     return genai.GenerativeModel(model_name=model_name)
 
-def generate_structured_json(prompt: str, schema_description: str, model_name: str = "gemini-1.5-flash") -> dict[str, Any]:
+def generate_structured_json(prompt: str, schema_description: str, model_name: str = "gemini-flash-latest") -> dict[str, Any]:
     """
     Generates a structured JSON response from Gemini.
     """
