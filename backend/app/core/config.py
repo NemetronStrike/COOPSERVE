@@ -23,10 +23,10 @@ class Settings(BaseSettings):
     def cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
-    # Database (placeholder — not yet implemented)
+    # Database
     database_url: str = ""
 
-    # Security (placeholder — not yet implemented)
+    # Security (not yet implemented)
     secret_key: str = ""
     access_token_expire_minutes: int = 30
 

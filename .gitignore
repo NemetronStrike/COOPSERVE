@@ -54,3 +54,6 @@ desktop.ini
 *.swp
 *.swo
 test_android/
+backend/.venv/
+backend/.env
+
