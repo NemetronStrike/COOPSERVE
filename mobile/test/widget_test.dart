@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:coopserve/features/auth/screens/role_selection_screen.dart';
 import 'package:coopserve/features/auth/screens/splash_screen.dart';
+import 'package:coopserve/features/customer/customer_screen.dart';
 import 'package:coopserve/models/user_role.dart';
 
 void main() {
@@ -32,6 +33,16 @@ void main() {
     expect(find.text('Customer'), findsOneWidget);
     expect(find.text('Worker'), findsOneWidget);
     expect(find.text('Cooperative Admin'), findsOneWidget);
+  });
+
+  testWidgets('Customer dashboard starts with a loading state',
+      (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: CustomerScreen()),
+    );
+    await tester.pump();
+
+    expect(find.text('Preparing your services'), findsOneWidget);
   });
 
   testWidgets('UserRole labels are correct', (_) async {
