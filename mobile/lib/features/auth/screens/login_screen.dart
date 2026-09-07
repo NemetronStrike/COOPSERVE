@@ -60,27 +60,28 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _authService.login(LoginRequest(
+      final token = await _authService.login(LoginRequest(
         identifier: _identifierCtrl.text.trim(),
         password: _passwordCtrl.text,
         role: widget.role,
       ));
       if (!mounted) return;
-      _navigateToDestination();
+      _navigateByRole(token.role);
     } on ApiException catch (e) {
       setState(() => _serverError = e.message);
     } catch (_) {
-      setState(() => _serverError = 'Unable to connect. Check your network.');
+      setState(() => _serverError =
+          'Unable to connect to the server. Please check that the backend is running.');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _navigateToDestination() {
-    final route = switch (widget.role) {
-      UserRole.customer => AppRouter.customer,
-      UserRole.worker => AppRouter.worker,
-      UserRole.admin => AppRouter.admin,
+  void _navigateByRole(String role) {
+    final route = switch (role) {
+      'worker' => AppRouter.worker,
+      'admin' => AppRouter.admin,
+      _ => AppRouter.customer,
     };
     Navigator.pushNamedAndRemoveUntil(context, route, (_) => false);
   }

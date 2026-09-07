@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../../core/app_spacing.dart';
 import '../../../navigation/app_router.dart';
+import '../../../services/auth_service.dart';
+import '../../../models/user_role.dart';
 
 class SplashScreen extends StatefulWidget {
-  /// Delay before navigating to role selection.
-  /// Override in tests to avoid pending-timer failures.
+  /// Delay before session check. Override in tests.
   final Duration delay;
   const SplashScreen({super.key, this.delay = const Duration(seconds: 2)});
 
@@ -27,11 +28,23 @@ class _SplashScreenState extends State<SplashScreen>
     _fadeIn = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
 
-    Future.delayed(widget.delay, () {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, AppRouter.roleSelection);
-      }
-    });
+    Future.delayed(widget.delay, _checkSession);
+  }
+
+  Future<void> _checkSession() async {
+    if (!mounted) return;
+    final role = await AuthService().checkSession();
+    if (!mounted) return;
+    if (role != null) {
+      final route = switch (role) {
+        UserRole.customer => AppRouter.customer,
+        UserRole.worker => AppRouter.worker,
+        UserRole.admin => AppRouter.admin,
+      };
+      Navigator.pushReplacementNamed(context, route);
+    } else {
+      Navigator.pushReplacementNamed(context, AppRouter.roleSelection);
+    }
   }
 
   @override

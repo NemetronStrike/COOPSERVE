@@ -74,3 +74,42 @@ class AuthToken {
         fullName: json['full_name'] as String,
       );
 }
+
+/// Maps GET /auth/me response. Never contains hashed_password.
+class UserProfile {
+  final int id;
+  final String fullName;
+  final String email;
+  final String phone;
+  final String role;
+  final bool isActive;
+
+  const UserProfile({
+    required this.id,
+    required this.fullName,
+    required this.email,
+    required this.phone,
+    required this.role,
+    required this.isActive,
+  });
+
+  factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
+        id: json['id'] as int,
+        fullName: json['full_name'] as String,
+        email: json['email'] as String,
+        phone: json['phone'] as String,
+        role: json['role'] as String,
+        isActive: json['is_active'] as bool,
+      );
+
+  UserRole get userRole {
+    switch (role) {
+      case 'worker':
+        return UserRole.worker;
+      case 'admin':
+        return UserRole.admin;
+      default:
+        return UserRole.customer;
+    }
+  }
+}

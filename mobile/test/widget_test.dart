@@ -21,7 +21,8 @@ void main() {
       findsOneWidget,
     );
     // Fire the zero-duration timer and settle navigation.
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
   });
 
   testWidgets('Role selection screen renders all three roles', (tester) async {

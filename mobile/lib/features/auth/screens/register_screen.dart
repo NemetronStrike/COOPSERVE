@@ -93,7 +93,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _authService.register(RegisterRequest(
+      final token = await _authService.register(RegisterRequest(
         fullName: _nameCtrl.text.trim(),
         email: _emailCtrl.text.trim(),
         phone: _phoneCtrl.text.trim(),
@@ -108,16 +108,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
             : null,
       ));
       if (!mounted) return;
-      final route = switch (widget.role) {
-        UserRole.customer => AppRouter.customer,
-        UserRole.worker => AppRouter.worker,
-        UserRole.admin => AppRouter.admin,
+      final route = switch (token.role) {
+        'worker' => AppRouter.worker,
+        'admin' => AppRouter.admin,
+        _ => AppRouter.customer,
       };
       Navigator.pushNamedAndRemoveUntil(context, route, (_) => false);
     } on ApiException catch (e) {
       setState(() => _serverError = e.message);
     } catch (_) {
-      setState(() => _serverError = 'Unable to connect. Check your network.');
+      setState(() => _serverError =
+          'Unable to connect to the server. Please check that the backend is running.');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
