@@ -276,7 +276,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
   Widget _buildBookingsCard(BuildContext context) {
     return AppCardOutlined(
-      onTap: () {},
+      onTap: () => Navigator.pushNamed(context, AppRouter.customerBookings),
       child: Row(
         children: [
           Icon(Icons.calendar_month_rounded, color: Theme.of(context).colorScheme.primary),

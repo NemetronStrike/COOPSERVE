@@ -99,4 +99,27 @@ class ApiClient {
       throw const ApiException(0, 'network_error');
     }
   }
+
+  static Future<Map<String, dynamic>> patch(
+    String path,
+    Map<String, dynamic> body, {
+    String? token,
+  }) async {
+    try {
+      final response = await http
+          .patch(
+            _base.replace(path: path),
+            headers: _headers(token: token),
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 15));
+      return _parseResponse(response) as Map<String, dynamic>;
+    } on ApiException {
+      rethrow;
+    } on SocketException {
+      throw const ApiException(0, 'network_error');
+    } catch (_) {
+      throw const ApiException(0, 'network_error');
+    }
+  }
 }

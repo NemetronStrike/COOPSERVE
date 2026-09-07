@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
 import '../../core/app_spacing.dart';
 import '../../navigation/app_router.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/app_card.dart';
 import '../../widgets/app_empty_state.dart';
 
 class WorkerScreen extends StatelessWidget {
@@ -22,10 +24,26 @@ class WorkerScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        child: AppEmptyState(
-          icon: Icons.engineering_rounded,
-          title: 'Worker Dashboard',
-          subtitle: 'Job management and earnings features coming soon.',
+        child: Column(
+          children: [
+            const AppEmptyState(
+              icon: Icons.engineering_rounded,
+              title: 'Worker Dashboard',
+              subtitle: 'Manage your assigned service bookings.',
+            ),
+            AppCardOutlined(
+              onTap: () =>
+                  Navigator.pushNamed(context, AppRouter.workerBookings),
+              child: const Row(
+                children: [
+                  Icon(Icons.event_note_rounded),
+                  SizedBox(width: AppSpacing.md),
+                  Expanded(child: Text('My Bookings')),
+                  Icon(Icons.chevron_right_rounded),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -35,7 +53,10 @@ class WorkerScreen extends StatelessWidget {
     await AuthService().logout();
     if (context.mounted) {
       Navigator.pushNamedAndRemoveUntil(
-          context, AppRouter.roleSelection, (_) => false);
+        context,
+        AppRouter.roleSelection,
+        (_) => false,
+      );
     }
   }
 }

@@ -3,9 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:coopserve/features/auth/screens/role_selection_screen.dart';
 import 'package:coopserve/features/auth/screens/splash_screen.dart';
 import 'package:coopserve/features/customer/customer_screen.dart';
+import 'package:coopserve/features/customer/booking_screen.dart';
+import 'package:coopserve/features/customer/customer_bookings_screen.dart';
 import 'package:coopserve/features/customer/service_catalog_screen.dart';
 import 'package:coopserve/features/customer/service_details_screen.dart';
 import 'package:coopserve/features/customer/worker_details_screen.dart';
+import 'package:coopserve/features/worker/worker_bookings_screen.dart';
+import 'package:coopserve/models/booking_models.dart';
 import 'package:coopserve/models/service_listing.dart';
 import 'package:coopserve/models/user_role.dart';
 import 'package:coopserve/models/worker_profile.dart';
@@ -33,26 +37,22 @@ void main() {
   });
 
   testWidgets('Role selection screen renders all three roles', (tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(home: RoleSelectionScreen()),
-    );
+    await tester.pumpWidget(const MaterialApp(home: RoleSelectionScreen()));
     expect(find.text('Customer'), findsOneWidget);
     expect(find.text('Worker'), findsOneWidget);
     expect(find.text('Cooperative Admin'), findsOneWidget);
   });
 
-  testWidgets('Customer dashboard starts with a loading state',
-      (tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(home: CustomerScreen()),
-    );
+  testWidgets('Customer dashboard starts with a loading state', (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: CustomerScreen()));
     await tester.pump();
 
     expect(find.text('Preparing your services'), findsOneWidget);
   });
 
-  testWidgets('Service catalog renders services and opens details',
-      (tester) async {
+  testWidgets('Service catalog renders services and opens details', (
+    tester,
+  ) async {
     final service = _testService();
     await tester.pumpWidget(
       MaterialApp(
@@ -70,10 +70,7 @@ void main() {
     expect(find.text(service.category), findsWidgets);
 
     final route = AppRouter.onGenerateRoute(
-      RouteSettings(
-        name: AppRouter.serviceDetails,
-        arguments: service.id,
-      ),
+      RouteSettings(name: AppRouter.serviceDetails, arguments: service.id),
     );
     expect(route, isA<MaterialPageRoute<dynamic>>());
 
@@ -94,8 +91,9 @@ void main() {
     expect(find.text('Aarav Sharma'), findsOneWidget);
   });
 
-  testWidgets('Worker details renders selected worker information',
-      (tester) async {
+  testWidgets('Worker details renders selected worker information', (
+    tester,
+  ) async {
     final worker = _testWorker();
     await tester.pumpWidget(
       MaterialApp(
@@ -111,8 +109,81 @@ void main() {
     expect(find.text('Verified cooperative worker'), findsOneWidget);
   });
 
-  testWidgets('Service catalog combines search and category filters',
-      (tester) async {
+  testWidgets('Worker details exposes Book Now for a selected service', (
+    tester,
+  ) async {
+    final worker = _testWorker();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: WorkerDetailsScreen(
+          workerId: worker.id,
+          initialWorker: worker,
+          service: _testService(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Book Now'), findsOneWidget);
+  });
+
+  testWidgets('Booking screen renders selected service and worker', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BookingScreen(
+          selection: BookingSelection(
+            service: _testService(),
+            worker: _testWorker(),
+          ),
+          createBooking: _fakeCreateBooking,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Home cleaning'), findsOneWidget);
+    expect(find.text('Worker: Aarav Sharma'), findsOneWidget);
+    expect(find.text('Confirm Booking'), findsOneWidget);
+  });
+
+  testWidgets('Customer bookings renders API booking data', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: CustomerBookingsScreen(
+          loadBookings: () async => [_testBooking()],
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Home cleaning'), findsOneWidget);
+    expect(find.text('Worker: Aarav Sharma'), findsOneWidget);
+    expect(find.text('Pending'), findsOneWidget);
+  });
+
+  testWidgets('Worker bookings exposes the next lifecycle action', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: WorkerBookingsScreen(
+          loadBookings: () async => [_testBooking()],
+          updateStatus: (_, status) async => _testBooking(status: status),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Accept Booking'), findsOneWidget);
+  });
+
+  testWidgets('Service catalog combines search and category filters', (
+    tester,
+  ) async {
     final cleaning = _testService(
       name: 'Home cleaning',
       category: 'Cleaning',
@@ -129,11 +200,13 @@ void main() {
           loadServices: ({search, category}) async {
             final services = [cleaning, electrician];
             return services.where((service) {
-              final matchesSearch = search == null ||
+              final matchesSearch =
+                  search == null ||
                   '${service.name} ${service.description}'
                       .toLowerCase()
                       .contains(search.toLowerCase());
-              final matchesCategory = category == null ||
+              final matchesCategory =
+                  category == null ||
                   service.category.toLowerCase() == category.toLowerCase();
               return matchesSearch && matchesCategory;
             }).toList();
@@ -144,10 +217,7 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    await tester.enterText(
-      find.byType(TextField),
-      'FRESH',
-    );
+    await tester.enterText(find.byType(TextField), 'FRESH');
     await tester.pump();
     expect(find.text(cleaning.name), findsOneWidget);
     expect(find.text(electrician.name), findsNothing);
@@ -216,4 +286,33 @@ WorkerProfile _testWorker() {
     isAvailable: true,
     isVerified: true,
   );
+}
+
+Booking _testBooking({BookingStatus status = BookingStatus.pending}) {
+  return Booking(
+    id: 42,
+    customerId: 1,
+    workerId: 1,
+    serviceId: 1,
+    scheduledAt: DateTime.now().add(const Duration(days: 2, hours: 2)),
+    scheduledEndAt: DateTime.now().add(const Duration(days: 2, hours: 3)),
+    serviceAddress: '12 Cooperative Road',
+    amount: 499,
+    status: status,
+    createdAt: DateTime.now(),
+    customerName: 'Customer One',
+    workerName: 'Aarav Sharma',
+    serviceName: 'Home cleaning',
+  );
+}
+
+Future<Booking> _fakeCreateBooking({
+  required int serviceId,
+  required int workerId,
+  required DateTime scheduledDate,
+  required DateTime startTime,
+  required DateTime endTime,
+  required String serviceAddress,
+}) async {
+  return _testBooking();
 }

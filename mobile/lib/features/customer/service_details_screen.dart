@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../../core/app_colors.dart';
 import '../../core/app_spacing.dart';
 import '../../core/app_text_styles.dart';
 import '../../models/service_listing.dart';
+import '../../models/booking_models.dart';
 import '../../models/worker_profile.dart';
 import '../../navigation/app_router.dart';
 import '../../services/customer_service.dart';
@@ -21,8 +23,8 @@ class ServiceDetailsScreen extends StatefulWidget {
     required this.serviceId,
     Future<ServiceListing> Function(int serviceId)? loadService,
     Future<List<WorkerProfile>> Function(int serviceId)? loadWorkers,
-  })  : loadService = loadService ?? CustomerService().getServiceDetails,
-        loadWorkers = loadWorkers ?? _defaultLoadWorkers;
+  }) : loadService = loadService ?? CustomerService().getServiceDetails,
+       loadWorkers = loadWorkers ?? _defaultLoadWorkers;
 
   static Future<List<WorkerProfile>> _defaultLoadWorkers(int serviceId) {
     return CustomerService().getWorkers(serviceId: serviceId);
@@ -86,63 +88,65 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       body: _service == null && _errorMessage == null
           ? const AppLoading(message: 'Loading service details')
           : _errorMessage != null
-              ? AppErrorState(message: _errorMessage!, onRetry: _loadService)
-              : _buildDetails(context, _service!),
+          ? AppErrorState(message: _errorMessage!, onRetry: _loadService)
+          : _buildDetails(context, _service!),
     );
   }
 
   Widget _buildDetails(BuildContext context, ServiceListing service) {
     return ListView(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        children: [
-          AppCard(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _serviceIcon(service),
-                const SizedBox(height: AppSpacing.md),
-                Text(service.name,
-                  style: AppTextStyles.headlineSmall(context)),
-                const SizedBox(height: AppSpacing.sm),
-                Text(service.category,
-                  style: AppTextStyles.labelLarge(context)),
-                const SizedBox(height: AppSpacing.md),
-                Text(service.description,
-                  style: AppTextStyles.bodyLarge(context)),
-                const SizedBox(height: AppSpacing.lg),
-                Row(
-                  children: [
-                    const Icon(Icons.star_rounded, color: AppColors.warning),
-                    const SizedBox(width: AppSpacing.xs),
-                    Text('${service.rating} (${service.reviewCount} reviews)'),
-                    const Spacer(),
-                    Text(service.priceLabel,
-                      style: AppTextStyles.titleMedium(context)),
-                  ],
-                ),
-              ],
-            ),
+      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+      children: [
+        AppCard(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _serviceIcon(service),
+              const SizedBox(height: AppSpacing.md),
+              Text(service.name, style: AppTextStyles.headlineSmall(context)),
+              const SizedBox(height: AppSpacing.sm),
+              Text(service.category, style: AppTextStyles.labelLarge(context)),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                service.description,
+                style: AppTextStyles.bodyLarge(context),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Row(
+                children: [
+                  const Icon(Icons.star_rounded, color: AppColors.warning),
+                  const SizedBox(width: AppSpacing.xs),
+                  Text('${service.rating} (${service.reviewCount} reviews)'),
+                  const Spacer(),
+                  Text(
+                    service.priceLabel,
+                    style: AppTextStyles.titleMedium(context),
+                  ),
+                ],
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.lg),
-          Text('About this service', style: AppTextStyles.titleLarge(context)),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'This service is provided by verified cooperative workers. '
-            'Availability and final pricing will be confirmed before booking.',
-            style: AppTextStyles.bodyMedium(context),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        Text('About this service', style: AppTextStyles.titleLarge(context)),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          'This service is provided by verified cooperative workers. '
+          'Availability and final pricing will be confirmed before booking.',
+          style: AppTextStyles.bodyMedium(context),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        _buildAvailableWorkers(context, service.id),
+        const SizedBox(height: AppSpacing.lg),
+        AppButton(
+          label: 'Continue to booking',
+          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Booking will be available soon.')),
           ),
-          const SizedBox(height: AppSpacing.xl),
-          _buildAvailableWorkers(context, service.id),
-          const SizedBox(height: AppSpacing.lg),
-          AppButton(
-            label: 'Continue to booking',
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Booking will be available soon.')),
-            ),
-          ),
-        ],
-      );
+        ),
+      ],
+    );
   }
 
   Widget _buildAvailableWorkers(BuildContext context, int serviceId) {
@@ -161,7 +165,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           )
         else if (_workers.isEmpty)
           const AppCard(
-            child: Text('No verified workers are available for this service yet.'),
+            child: Text(
+              'No verified workers are available for this service yet.',
+            ),
           )
         else
           ..._workers.map((worker) => _buildWorkerCard(context, worker)),
@@ -176,13 +182,16 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
         onTap: () => Navigator.pushNamed(
           context,
           AppRouter.workerDetails,
-          arguments: worker.id,
+          arguments: BookingSelection(service: _service!, worker: worker),
         ),
         child: Row(
           children: [
             CircleAvatar(
               backgroundColor: AppColors.customerAccent.withAlpha(28),
-              child: Icon(Icons.person_rounded, color: AppColors.customerAccent),
+              child: Icon(
+                Icons.person_rounded,
+                color: AppColors.customerAccent,
+              ),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -192,18 +201,19 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: Text(worker.name,
-                            style: AppTextStyles.titleMedium(context)),
+                        child: Text(
+                          worker.name,
+                          style: AppTextStyles.titleMedium(context),
+                        ),
                       ),
                       if (worker.isVerified)
-                        const Icon(Icons.verified_rounded,
-                            size: 18, color: AppColors.success),
+                        const Icon(
+                          Icons.verified_rounded,
+                          size: 18,
+                          color: AppColors.success,
+                        ),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(worker.skills.join(' • '),
-                      style: AppTextStyles.bodySmall(context)),
-                  const SizedBox(height: AppSpacing.sm),
                   Wrap(
                     spacing: AppSpacing.sm,
                     runSpacing: AppSpacing.xs,
@@ -219,7 +229,10 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                       onPressed: () => Navigator.pushNamed(
                         context,
                         AppRouter.workerDetails,
-                        arguments: worker.id,
+                        arguments: BookingSelection(
+                          service: _service!,
+                          worker: worker,
+                        ),
                       ),
                       child: const Text('Select Worker'),
                     ),
@@ -239,7 +252,11 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     return CircleAvatar(
       radius: AppSpacing.avatarSizeLarge / 2,
       backgroundColor: AppColors.customerAccent.withAlpha(28),
-      child: Icon(Icons.home_repair_service_rounded, color: AppColors.customerAccent, size: AppSpacing.iconSizeLarge),
+      child: Icon(
+        Icons.home_repair_service_rounded,
+        color: AppColors.customerAccent,
+        size: AppSpacing.iconSizeLarge,
+      ),
     );
   }
 }
