@@ -124,7 +124,12 @@ class _CustomerScreenState extends State<CustomerScreen> {
           const SizedBox(height: AppSpacing.sm),
           _buildCategories(categories),
           const SizedBox(height: AppSpacing.lg),
-          _buildSectionHeader(context, 'Popular services', actionLabel: 'View all'),
+          _buildSectionHeader(
+            context,
+            'Popular services',
+            actionLabel: 'View all',
+            onAction: () => Navigator.pushNamed(context, AppRouter.serviceCatalog),
+          ),
           const SizedBox(height: AppSpacing.sm),
           if (_visibleServices.isEmpty)
             const AppCard(child: Text('No services match your search yet.'))
@@ -203,12 +208,17 @@ class _CustomerScreenState extends State<CustomerScreen> {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title, {String? actionLabel}) {
+  Widget _buildSectionHeader(
+    BuildContext context,
+    String title, {
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
     return Row(
       children: [
         Expanded(child: Text(title, style: AppTextStyles.titleLarge(context))),
         if (actionLabel != null)
-          TextButton(onPressed: () {}, child: Text(actionLabel)),
+          TextButton(onPressed: onAction, child: Text(actionLabel)),
       ],
     );
   }

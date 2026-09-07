@@ -2,7 +2,7 @@ import '../models/service_listing.dart';
 
 /// Provides customer-facing catalog data until the service catalog API exists.
 class CustomerService {
-  Future<List<ServiceListing>> getFeaturedServices() async {
+  Future<List<ServiceListing>> getAllServices() async {
     return const [
       ServiceListing(
         name: 'Home cleaning',
@@ -40,6 +40,20 @@ class CustomerService {
         reviewCount: 64,
         iconName: 'appliance',
       ),
+      ServiceListing(
+        name: 'Garden maintenance',
+        category: 'Home care',
+        description: 'Keep your outdoor spaces healthy and welcoming.',
+        priceLabel: 'From Rs. 449',
+        rating: 4.6,
+        reviewCount: 52,
+        iconName: 'garden',
+      ),
     ];
+  }
+
+  Future<List<ServiceListing>> getFeaturedServices() async {
+    final services = await getAllServices();
+    return services.take(4).toList();
   }
 }
