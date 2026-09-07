@@ -13,6 +13,7 @@ class BookingCreate(BaseModel):
     start_time: time
     end_time: time
     service_address: str = Field(min_length=1, max_length=500)
+    is_emergency: bool = False
 
     @field_validator("service_address")
     @classmethod
@@ -44,6 +45,7 @@ class BookingResponse(BaseModel):
     status: BookingStatus
     created_at: datetime | None
     updated_at: datetime | None
+    is_emergency: bool = False
 
 
 class BookingSummary(BookingResponse):
@@ -53,3 +55,4 @@ class BookingSummary(BookingResponse):
     payment_id: int | None = None
     payment_status: str | None = None
     transaction_reference: str | None = None
+    is_emergency: bool = False

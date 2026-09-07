@@ -32,6 +32,7 @@ class User(Base):
     customer_profile: Mapped["Customer"] = relationship(back_populates="user", uselist=False)
     worker_profile: Mapped["Worker"] = relationship(back_populates="user", uselist=False)
     admin_profile: Mapped["Admin"] = relationship(back_populates="user", uselist=False)
+    notifications: Mapped[list["Notification"]] = relationship(back_populates="user")
 
 
 class Customer(Base):

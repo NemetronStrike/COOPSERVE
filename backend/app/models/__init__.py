@@ -9,6 +9,7 @@ from app.models.location import Location  # noqa: F401
 from app.models.booking import Booking  # noqa: F401
 from app.models.payment import Payment, Invoice  # noqa: F401
 from app.models.rating import Rating, Complaint  # noqa: F401
+from app.models.notification import Notification  # noqa: F401
 
 __all__ = [
     "Base",
@@ -19,4 +20,5 @@ __all__ = [
     "Booking",
     "Payment", "Invoice",
     "Rating", "Complaint",
+    "Notification",
 ]

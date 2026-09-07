@@ -17,6 +17,7 @@ class BookingScreen extends StatefulWidget {
     required DateTime startTime,
     required DateTime endTime,
     required String serviceAddress,
+    bool isEmergency,
   })
   createBooking;
 
@@ -30,6 +31,7 @@ class BookingScreen extends StatefulWidget {
       required DateTime startTime,
       required DateTime endTime,
       required String serviceAddress,
+      bool isEmergency,
     })?
     createBooking,
   }) : createBooking = createBooking ?? _defaultCreateBooking;
@@ -41,6 +43,7 @@ class BookingScreen extends StatefulWidget {
     required DateTime startTime,
     required DateTime endTime,
     required String serviceAddress,
+    bool isEmergency = false,
   }) {
     return BookingService().createBooking(
       serviceId: serviceId,
@@ -49,6 +52,7 @@ class BookingScreen extends StatefulWidget {
       startTime: startTime,
       endTime: endTime,
       serviceAddress: serviceAddress,
+      isEmergency: isEmergency,
     );
   }
 
@@ -63,6 +67,7 @@ class _BookingScreenState extends State<BookingScreen> {
   TimeOfDay? _endTime;
   bool _isSubmitting = false;
   String? _errorMessage;
+  bool _isEmergency = false;
 
   @override
   void dispose() {
@@ -130,6 +135,17 @@ class _BookingScreenState extends State<BookingScreen> {
               labelText: 'Service address',
               hintText: 'Enter the address where service is needed',
             ),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Emergency Service'),
+            subtitle: Text(
+              _isEmergency
+                  ? 'A 10% emergency surcharge applies.'
+                  : 'Standard service booking',
+            ),
+            value: _isEmergency,
+            onChanged: (value) => setState(() => _isEmergency = value),
           ),
           if (_errorMessage != null) ...[
             const SizedBox(height: AppSpacing.md),
@@ -218,6 +234,7 @@ class _BookingScreenState extends State<BookingScreen> {
           _endTime!.minute,
         ),
         serviceAddress: address,
+        isEmergency: _isEmergency,
       );
       if (!mounted) return;
       Navigator.pushReplacementNamed(

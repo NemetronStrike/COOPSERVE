@@ -68,6 +68,7 @@ class Booking {
   final int? paymentId;
   final String? paymentStatus;
   final String? transactionReference;
+  final bool isEmergency;
 
   const Booking({
     required this.id,
@@ -86,6 +87,7 @@ class Booking {
     this.paymentId,
     this.paymentStatus,
     this.transactionReference,
+    this.isEmergency = false,
   });
 
   factory Booking.fromJson(Map<String, dynamic> json) {
@@ -114,6 +116,7 @@ class Booking {
       paymentId: json['payment_id'] as int?,
       paymentStatus: json['payment_status'] as String?,
       transactionReference: json['transaction_reference'] as String?,
+      isEmergency: json['is_emergency'] as bool? ?? false,
     );
   }
 }

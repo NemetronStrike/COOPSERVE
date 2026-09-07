@@ -18,6 +18,8 @@ import '../features/customer/worker_details_screen.dart';
 import '../features/worker/worker_screen.dart';
 import '../features/worker/worker_bookings_screen.dart';
 import '../features/admin/admin_screen.dart';
+import '../features/admin/admin_workers_screen.dart';
+import '../features/notifications/notifications_screen.dart';
 import '../models/user_role.dart';
 import '../models/booking_models.dart';
 import '../models/payment_confirmation.dart';
@@ -42,6 +44,8 @@ class AppRouter {
   static const String rating = '/customer/rating';
   static const String worker = '/worker';
   static const String admin = '/admin';
+  static const String adminWorkers = '/admin/workers';
+  static const String notifications = '/notifications';
 
   // ── Route map ──────────────────────────────────────────────────────────────
   static Map<String, WidgetBuilder> get routes => {
@@ -53,6 +57,8 @@ class AppRouter {
     worker: (_) => const WorkerScreen(),
     workerBookings: (_) => WorkerBookingsScreen(),
     admin: (_) => const AdminScreen(),
+    adminWorkers: (_) => AdminWorkersScreen(),
+    notifications: (_) => NotificationsScreen(),
   };
 
   // ── onGenerateRoute — handles routes that require arguments ────────────────

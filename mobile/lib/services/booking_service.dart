@@ -16,6 +16,7 @@ class BookingService {
     required DateTime startTime,
     required DateTime endTime,
     required String serviceAddress,
+    bool isEmergency = false,
   }) async {
     final token = await _authService.getToken();
     final response = await ApiClient.post('/bookings', {
@@ -25,6 +26,7 @@ class BookingService {
       'start_time': _time(startTime),
       'end_time': _time(endTime),
       'service_address': serviceAddress,
+      'is_emergency': isEmergency,
     }, token: token);
     return Booking.fromJson(response);
   }

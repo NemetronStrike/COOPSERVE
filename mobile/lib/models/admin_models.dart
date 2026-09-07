@@ -1,0 +1,71 @@
+class AdminDashboardStats {
+  final int totalCustomers;
+  final int totalWorkers;
+  final int verifiedWorkers;
+  final int pendingWorkerVerifications;
+  final int totalBookings;
+  final int pendingBookings;
+  final int completedBookings;
+  final int cancelledBookings;
+  final int totalPayments;
+
+  const AdminDashboardStats({
+    required this.totalCustomers,
+    required this.totalWorkers,
+    required this.verifiedWorkers,
+    required this.pendingWorkerVerifications,
+    required this.totalBookings,
+    required this.pendingBookings,
+    required this.completedBookings,
+    required this.cancelledBookings,
+    required this.totalPayments,
+  });
+
+  factory AdminDashboardStats.fromJson(Map<String, dynamic> json) =>
+      AdminDashboardStats(
+        totalCustomers: json['total_customers'] as int,
+        totalWorkers: json['total_workers'] as int,
+        verifiedWorkers: json['verified_workers'] as int,
+        pendingWorkerVerifications: json['pending_worker_verifications'] as int,
+        totalBookings: json['total_bookings'] as int,
+        pendingBookings: json['pending_bookings'] as int,
+        completedBookings: json['completed_bookings'] as int,
+        cancelledBookings: json['cancelled_bookings'] as int,
+        totalPayments: json['total_payments'] as int,
+      );
+}
+
+class AdminWorker {
+  final int id;
+  final String name;
+  final List<String> skills;
+  final int? experienceYears;
+  final double rating;
+  final int totalJobs;
+  final bool isAvailable;
+  final String verificationStatus;
+
+  const AdminWorker({
+    required this.id,
+    required this.name,
+    required this.skills,
+    required this.experienceYears,
+    required this.rating,
+    required this.totalJobs,
+    required this.isAvailable,
+    required this.verificationStatus,
+  });
+
+  factory AdminWorker.fromJson(Map<String, dynamic> json) => AdminWorker(
+    id: json['id'] as int,
+    name: json['name'] as String,
+    skills: (json['skills'] as List<dynamic>)
+        .map((item) => item.toString())
+        .toList(),
+    experienceYears: json['experience_years'] as int?,
+    rating: (json['rating'] as num?)?.toDouble() ?? 0,
+    totalJobs: json['total_jobs'] as int? ?? 0,
+    isAvailable: json['is_available'] as bool? ?? true,
+    verificationStatus: json['verification_status'] as String,
+  );
+}

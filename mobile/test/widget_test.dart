@@ -13,6 +13,10 @@ import 'package:coopserve/features/customer/service_catalog_screen.dart';
 import 'package:coopserve/features/customer/service_details_screen.dart';
 import 'package:coopserve/features/customer/worker_details_screen.dart';
 import 'package:coopserve/features/worker/worker_bookings_screen.dart';
+import 'package:coopserve/features/admin/admin_workers_screen.dart';
+import 'package:coopserve/features/notifications/notifications_screen.dart';
+import 'package:coopserve/models/admin_models.dart';
+import 'package:coopserve/models/notification.dart';
 import 'package:coopserve/models/booking_models.dart';
 import 'package:coopserve/models/service_listing.dart';
 import 'package:coopserve/models/user_role.dart';
@@ -150,6 +154,7 @@ void main() {
 
     expect(find.text('Home cleaning'), findsOneWidget);
     expect(find.text('Worker: Aarav Sharma'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Confirm Booking'), 300, scrollable: find.byType(Scrollable).first);
     expect(find.text('Confirm Booking'), findsOneWidget);
   });
 
@@ -258,6 +263,96 @@ void main() {
     await tester.pump();
     expect(find.text('Payment: success'), findsOneWidget);
     expect(find.text('Transaction: MOCK-42'), findsOneWidget);
+  });
+
+  testWidgets('Emergency booking option renders', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BookingScreen(
+          selection: BookingSelection(
+            service: _testService(),
+            worker: _testWorker(),
+          ),
+          createBooking: _fakeCreateBooking,
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('Emergency Service'), findsOneWidget);
+    await tester.ensureVisible(find.byType(Switch));
+    await tester.tap(find.byType(Switch));
+    await tester.pump();
+    expect(find.text('A 10% emergency surcharge applies.'), findsOneWidget);
+  });
+
+  testWidgets('Admin worker verification screen renders actions', (
+    tester,
+  ) async {
+    final worker = const AdminWorker(
+      id: 1,
+      name: 'Aarav Sharma',
+      skills: ['Cleaning'],
+      experienceYears: 6,
+      rating: 4.8,
+      totalJobs: 20,
+      isAvailable: true,
+      verificationStatus: 'pending',
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AdminWorkersScreen(
+          loadWorkers: (_) async => [worker],
+          updateVerification: (_, status) async => AdminWorker(
+            id: 1,
+            name: 'Aarav Sharma',
+            skills: const ['Cleaning'],
+            experienceYears: 6,
+            rating: 4.8,
+            totalJobs: 20,
+            isAvailable: true,
+            verificationStatus: status,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Aarav Sharma'), findsOneWidget);
+    expect(find.text('Verify Worker'), findsOneWidget);
+  });
+
+  testWidgets('Notifications screen distinguishes unread items', (
+    tester,
+  ) async {
+    final notification = AppNotification(
+      id: 1,
+      title: 'Booking accepted',
+      message: 'Your booking was accepted.',
+      type: 'booking_accepted',
+      relatedBookingId: 42,
+      isRead: false,
+      createdAt: DateTime.now(),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: NotificationsScreen(
+          loadNotifications: () async => [notification],
+          markRead: (_) async => AppNotification(
+            id: 1,
+            title: 'Booking accepted',
+            message: 'Your booking was accepted.',
+            type: 'booking_accepted',
+            relatedBookingId: 42,
+            isRead: true,
+            createdAt: DateTime.now(),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Booking accepted'), findsOneWidget);
+    expect(find.text('Unread'), findsOneWidget);
   });
 
   testWidgets('Service catalog combines search and category filters', (
@@ -392,6 +487,7 @@ Future<Booking> _fakeCreateBooking({
   required DateTime startTime,
   required DateTime endTime,
   required String serviceAddress,
+  bool isEmergency = false,
 }) async {
   return _testBooking();
 }

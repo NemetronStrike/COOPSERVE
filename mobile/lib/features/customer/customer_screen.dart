@@ -86,6 +86,11 @@ class _CustomerScreenState extends State<CustomerScreen> {
         title: const Text('COOPSERVE'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.notifications_none_rounded),
+            tooltip: 'Notifications',
+            onPressed: () => Navigator.pushNamed(context, AppRouter.notifications),
+          ),
+          IconButton(
             icon: const Icon(Icons.logout_rounded),
             tooltip: 'Sign out',
             onPressed: () => _logout(context),

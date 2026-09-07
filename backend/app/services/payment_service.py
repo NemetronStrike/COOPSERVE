@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.models.booking import Booking, BookingStatus
 from app.models.payment import Invoice, Payment, PaymentMethod, PaymentStatus
+from app.models.notification import Notification
 from app.models.user import User, UserRole
 from app.repositories.payment_repository import (
     get_invoice_for_booking,
@@ -73,6 +74,14 @@ def create_mock_payment(db: Session, user: User, booking_id: int, payment_method
     db.add(invoice)
     db.commit()
     db.refresh(payment)
+    db.add(Notification(
+        user_id=user.id,
+        title="Payment successful",
+        message=f"Payment for booking #{booking.id} was successful.",
+        type="payment_success",
+        related_booking_id=booking.id,
+    ))
+    db.commit()
     return _payment_response(payment)
 
 

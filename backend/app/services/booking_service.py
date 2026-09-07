@@ -1,10 +1,12 @@
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models.booking import Booking, BookingStatus
 from app.models.payment import PaymentStatus
+from app.models.notification import Notification
 from app.models.service import Service
 from app.models.user import User, UserRole, Worker
 from app.repositories.booking_repository import (
@@ -49,6 +51,7 @@ def _summary(booking: Booking) -> BookingSummary:
         transaction_reference=booking.payment.transaction_reference
         if booking.payment
         else None,
+        is_emergency=booking.is_emergency,
     )
 
 
@@ -95,10 +98,28 @@ def create_customer_booking(db: Session, user: User, request: BookingCreate) -> 
         scheduled_at=start,
         scheduled_end_at=end,
         service_address=request.service_address,
-        price=service.base_price,
+        price=service.base_price * (Decimal("1.10") if request.is_emergency else Decimal("1")),
         status=BookingStatus.pending,
+        is_emergency=request.is_emergency,
     )
-    return _summary(create_booking(db, booking))
+    created = create_booking(db, booking)
+    db.add(Notification(
+        user_id=user.id,
+        title="Booking created",
+        message=f"Your {'emergency ' if created.is_emergency else ''}booking for {service.name} was created.",
+        type="booking_created",
+        related_booking_id=created.id,
+    ))
+    if worker.user_id != user.id:
+        db.add(Notification(
+            user_id=worker.user_id,
+            title="New booking assigned",
+            message=f"A new booking for {service.name} is waiting for your review.",
+            type="booking_assigned",
+            related_booking_id=created.id,
+        ))
+    db.commit()
+    return _summary(created)
 
 
 def customer_bookings(db: Session, user: User) -> list[BookingSummary]:
@@ -141,4 +162,19 @@ def update_booking_status(db: Session, user: User, booking_id: int, new_status: 
     booking.status = new_status
     db.commit()
     db.refresh(booking)
+    if booking.customer and booking.customer.user:
+        labels = {
+            BookingStatus.accepted: "Booking accepted",
+            BookingStatus.in_progress: "Service started",
+            BookingStatus.completed: "Service completed",
+        }
+        if new_status in labels:
+            db.add(Notification(
+                user_id=booking.customer.user_id,
+                title=labels[new_status],
+                message=f"Your booking #{booking.id} is now {new_status.value.replace('_', ' ')}.",
+                type=f"booking_{new_status.value}",
+                related_booking_id=booking.id,
+            ))
+            db.commit()
     return _summary(booking)
