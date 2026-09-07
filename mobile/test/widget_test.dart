@@ -54,7 +54,9 @@ void main() {
     final service = _testService();
     await tester.pumpWidget(
       MaterialApp(
-        home: ServiceCatalogScreen(loadServices: () async => [service]),
+        home: ServiceCatalogScreen(
+          loadServices: ({search, category}) async => [service],
+        ),
         onGenerateRoute: AppRouter.onGenerateRoute,
       ),
     );
@@ -68,13 +70,18 @@ void main() {
     final route = AppRouter.onGenerateRoute(
       RouteSettings(
         name: AppRouter.serviceDetails,
-        arguments: service,
+        arguments: service.id,
       ),
     );
     expect(route, isA<MaterialPageRoute<dynamic>>());
 
     await tester.pumpWidget(
-      MaterialApp(home: ServiceDetailsScreen(service: service)),
+      MaterialApp(
+        home: ServiceDetailsScreen(
+          serviceId: service.id,
+          loadService: (_) async => service,
+        ),
+      ),
     );
     await tester.pump();
 
@@ -97,7 +104,18 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: ServiceCatalogScreen(
-          loadServices: () async => [cleaning, electrician],
+          loadServices: ({search, category}) async {
+            final services = [cleaning, electrician];
+            return services.where((service) {
+              final matchesSearch = search == null ||
+                  '${service.name} ${service.description}'
+                      .toLowerCase()
+                      .contains(search.toLowerCase());
+              final matchesCategory = category == null ||
+                  service.category.toLowerCase() == category.toLowerCase();
+              return matchesSearch && matchesCategory;
+            }).toList();
+          },
         ),
       ),
     );
@@ -122,7 +140,10 @@ void main() {
   testWidgets('Service catalog shows an empty state', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        home: ServiceCatalogScreen(loadServices: () async => [_testService()]),
+        home: ServiceCatalogScreen(
+          loadServices: ({search, category}) async =>
+              search == null ? [_testService()] : [],
+        ),
       ),
     );
     await tester.pump();
@@ -143,11 +164,13 @@ void main() {
 }
 
 ServiceListing _testService({
+  int id = 1,
   String name = 'Home cleaning',
   String category = 'Cleaning',
   String description = 'Trusted help for a fresh, comfortable home.',
 }) {
   return ServiceListing(
+    id: id,
     name: name,
     category: category,
     description: description,

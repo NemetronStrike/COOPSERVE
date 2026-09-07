@@ -1,59 +1,31 @@
 import '../models/service_listing.dart';
+import 'api_client.dart';
 
-/// Provides customer-facing catalog data until the service catalog API exists.
+/// Retrieves customer-facing catalog data through the FastAPI service layer.
 class CustomerService {
-  Future<List<ServiceListing>> getAllServices() async {
-    return const [
-      ServiceListing(
-        name: 'Home cleaning',
-        category: 'Cleaning',
-        description: 'Trusted help for a fresh, comfortable home.',
-        priceLabel: 'From Rs. 499',
-        rating: 4.8,
-        reviewCount: 124,
-        iconName: 'cleaning',
-      ),
-      ServiceListing(
-        name: 'Electrician',
-        category: 'Repairs',
-        description: 'Skilled support for everyday electrical needs.',
-        priceLabel: 'From Rs. 299',
-        rating: 4.7,
-        reviewCount: 98,
-        iconName: 'electrical',
-      ),
-      ServiceListing(
-        name: 'Plumbing repair',
-        category: 'Repairs',
-        description: 'Quick, dependable fixes from verified workers.',
-        priceLabel: 'From Rs. 349',
-        rating: 4.6,
-        reviewCount: 76,
-        iconName: 'plumbing',
-      ),
-      ServiceListing(
-        name: 'Appliance service',
-        category: 'Maintenance',
-        description: 'Care for the appliances your household relies on.',
-        priceLabel: 'From Rs. 399',
-        rating: 4.5,
-        reviewCount: 64,
-        iconName: 'appliance',
-      ),
-      ServiceListing(
-        name: 'Garden maintenance',
-        category: 'Home care',
-        description: 'Keep your outdoor spaces healthy and welcoming.',
-        priceLabel: 'From Rs. 449',
-        rating: 4.6,
-        reviewCount: 52,
-        iconName: 'garden',
-      ),
-    ];
+  Future<List<ServiceListing>> getAllServices({
+    String? search,
+    String? category,
+  }) async {
+    final response = await ApiClient.getList(
+      '/services',
+      queryParameters: {
+        if (search != null && search.trim().isNotEmpty) 'search': search,
+        if (category != null && category.trim().isNotEmpty) 'category': category,
+      },
+    );
+    return response
+        .map((item) => ServiceListing.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<ServiceListing>> getFeaturedServices() async {
     final services = await getAllServices();
     return services.take(4).toList();
+  }
+
+  Future<ServiceListing> getServiceDetails(int serviceId) async {
+    final response = await ApiClient.get('/services/$serviceId');
+    return ServiceListing.fromJson(response);
   }
 }

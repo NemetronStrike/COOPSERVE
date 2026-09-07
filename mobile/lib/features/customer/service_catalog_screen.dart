@@ -11,11 +11,13 @@ import '../../widgets/app_error_state.dart';
 import '../../widgets/app_loading.dart';
 
 class ServiceCatalogScreen extends StatefulWidget {
-  final Future<List<ServiceListing>> Function() loadServices;
+  final Future<List<ServiceListing>> Function({String? search, String? category})
+      loadServices;
 
   ServiceCatalogScreen({
     super.key,
-    Future<List<ServiceListing>> Function()? loadServices,
+    Future<List<ServiceListing>> Function({String? search, String? category})?
+        loadServices,
   }) : loadServices = loadServices ?? CustomerService().getAllServices;
 
   @override
@@ -25,6 +27,7 @@ class ServiceCatalogScreen extends StatefulWidget {
 class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
   final _searchController = TextEditingController();
   List<ServiceListing> _services = const [];
+  List<String> _categories = const ['All'];
   bool _isLoading = true;
   String? _errorMessage;
   String _selectedCategory = 'All';
@@ -41,16 +44,25 @@ class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
     super.dispose();
   }
 
-  Future<void> _loadServices() async {
+  Future<void> _loadServices({String? search, String? category}) async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
     try {
-      final services = await widget.loadServices();
+      final services = await widget.loadServices(
+        search: search,
+        category: category,
+      );
       if (!mounted) return;
       setState(() {
         _services = services;
+        if (search == null && category == null) {
+          _categories = [
+            'All',
+            ...services.map((service) => service.category).toSet(),
+          ];
+        }
         _isLoading = false;
       });
     } catch (_) {
@@ -60,18 +72,6 @@ class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
         _errorMessage = 'We could not load services right now.';
       });
     }
-  }
-
-  List<ServiceListing> get _visibleServices {
-    final query = _searchController.text.trim().toLowerCase();
-    return _services.where((service) {
-      final matchesCategory =
-          _selectedCategory == 'All' || service.category == _selectedCategory;
-      final searchableText =
-          '${service.name} ${service.description}'.toLowerCase();
-      return matchesCategory &&
-          (query.isEmpty || searchableText.contains(query));
-    }).toList();
   }
 
   @override
@@ -87,11 +87,6 @@ class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
   }
 
   Widget _buildCatalog(BuildContext context) {
-    final categories = <String>{
-      'All',
-      ..._services.map((service) => service.category),
-    }.toList();
-
     return RefreshIndicator(
       onRefresh: _loadServices,
       child: ListView(
@@ -106,7 +101,7 @@ class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
           const SizedBox(height: AppSpacing.sm),
           TextField(
             controller: _searchController,
-            onChanged: (_) => setState(() {}),
+            onChanged: _onSearchChanged,
             decoration: const InputDecoration(
               hintText: 'Search by name or description',
               prefixIcon: Icon(Icons.search_rounded),
@@ -115,9 +110,9 @@ class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
           const SizedBox(height: AppSpacing.lg),
           Text('Categories', style: AppTextStyles.titleLarge(context)),
           const SizedBox(height: AppSpacing.sm),
-          _buildCategories(categories),
+          _buildCategories(),
           const SizedBox(height: AppSpacing.lg),
-          if (_visibleServices.isEmpty)
+          if (_services.isEmpty)
             const SizedBox(
               height: 300,
               child: AppEmptyState(
@@ -127,28 +122,45 @@ class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
               ),
             )
           else
-            ..._visibleServices.map((service) => _buildServiceCard(service)),
+            ..._services.map((service) => _buildServiceCard(service)),
         ],
       ),
     );
   }
 
-  Widget _buildCategories(List<String> categories) {
+  Widget _buildCategories() {
     return SizedBox(
       height: 42,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
+        itemCount: _categories.length,
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
         itemBuilder: (context, index) {
-          final category = categories[index];
+          final category = _categories[index];
           return ChoiceChip(
             label: Text(category),
             selected: category == _selectedCategory,
-            onSelected: (_) => setState(() => _selectedCategory = category),
+            onSelected: (_) => _onCategorySelected(category),
           );
         },
       ),
+    );
+  }
+
+  void _onSearchChanged(String value) {
+    _loadServices(
+      search: value.trim().isEmpty ? null : value.trim(),
+      category: _selectedCategory == 'All' ? null : _selectedCategory,
+    );
+  }
+
+  void _onCategorySelected(String category) {
+    setState(() => _selectedCategory = category);
+    _loadServices(
+      search: _searchController.text.trim().isEmpty
+          ? null
+          : _searchController.text.trim(),
+      category: category == 'All' ? null : category,
     );
   }
 
@@ -159,7 +171,7 @@ class _ServiceCatalogScreenState extends State<ServiceCatalogScreen> {
         onTap: () => Navigator.pushNamed(
           context,
           AppRouter.serviceDetails,
-          arguments: service,
+          arguments: service.id,
         ),
         child: Row(
           children: [

@@ -20,10 +20,11 @@ class ApiClient {
         if (token != null) 'Authorization': 'Bearer $token',
       };
 
-  static Map<String, dynamic> _parseResponse(http.Response response) {
-    final json = jsonDecode(response.body) as Map<String, dynamic>;
+  static dynamic _parseResponse(http.Response response) {
+    final json = jsonDecode(response.body);
     if (response.statusCode >= 200 && response.statusCode < 300) return json;
-    final detail = json['detail'];
+    final errorJson = json is Map<String, dynamic> ? json : <String, dynamic>{};
+    final detail = errorJson['detail'];
     final msg = detail is String
         ? detail
         : detail is List
@@ -45,7 +46,7 @@ class ApiClient {
             body: jsonEncode(body),
           )
           .timeout(const Duration(seconds: 15));
-      return _parseResponse(response);
+      return _parseResponse(response) as Map<String, dynamic>;
     } on ApiException {
       rethrow;
     } on SocketException {
@@ -58,15 +59,38 @@ class ApiClient {
   static Future<Map<String, dynamic>> get(
     String path, {
     String? token,
+    Map<String, String>? queryParameters,
   }) async {
     try {
       final response = await http
           .get(
-            _base.replace(path: path),
+            _base.replace(path: path, queryParameters: queryParameters),
             headers: _headers(token: token),
           )
           .timeout(const Duration(seconds: 15));
       return _parseResponse(response);
+    } on ApiException {
+      rethrow;
+    } on SocketException {
+      throw const ApiException(0, 'network_error');
+    } catch (_) {
+      throw const ApiException(0, 'network_error');
+    }
+  }
+
+  static Future<List<dynamic>> getList(
+    String path, {
+    String? token,
+    Map<String, String>? queryParameters,
+  }) async {
+    try {
+      final response = await http
+          .get(
+            _base.replace(path: path, queryParameters: queryParameters),
+            headers: _headers(token: token),
+          )
+          .timeout(const Duration(seconds: 15));
+      return _parseResponse(response) as List<dynamic>;
     } on ApiException {
       rethrow;
     } on SocketException {

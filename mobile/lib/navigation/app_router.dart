@@ -9,7 +9,6 @@ import '../features/customer/service_details_screen.dart';
 import '../features/worker/worker_screen.dart';
 import '../features/admin/admin_screen.dart';
 import '../models/user_role.dart';
-import '../models/service_listing.dart';
 
 class AppRouter {
   // ── Route names ────────────────────────────────────────────────────────────
@@ -50,10 +49,10 @@ class AppRouter {
         );
       case serviceDetails:
         final service = settings.arguments;
-        if (service is! ServiceListing) return null;
+        if (service is! int || service < 1) return null;
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => ServiceDetailsScreen(service: service),
+          builder: (_) => ServiceDetailsScreen(serviceId: service),
         );
       default:
         return null;

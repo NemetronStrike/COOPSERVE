@@ -63,6 +63,18 @@ Expected response:
 
 Available at http://127.0.0.1:8000/docs (development mode only).
 
+### 7. Seed demo services
+
+After applying migrations, populate the repeatable catalog demo data:
+
+```bash
+python -m scripts.seed_services
+```
+
+The command safely inserts or updates the eight sample services. Catalog reads
+are available at `GET /services`, with optional `search` and `category` query
+parameters, and `GET /services/{service_id}` for details.
+
 ## Project Structure
 
 ```
