@@ -5,6 +5,10 @@ import 'package:coopserve/features/auth/screens/splash_screen.dart';
 import 'package:coopserve/features/customer/customer_screen.dart';
 import 'package:coopserve/features/customer/booking_screen.dart';
 import 'package:coopserve/features/customer/customer_bookings_screen.dart';
+import 'package:coopserve/features/customer/booking_confirmation_screen.dart';
+import 'package:coopserve/features/customer/invoice_screen.dart';
+import 'package:coopserve/features/customer/payment_screen.dart';
+import 'package:coopserve/features/customer/rating_screen.dart';
 import 'package:coopserve/features/customer/service_catalog_screen.dart';
 import 'package:coopserve/features/customer/service_details_screen.dart';
 import 'package:coopserve/features/customer/worker_details_screen.dart';
@@ -13,6 +17,7 @@ import 'package:coopserve/models/booking_models.dart';
 import 'package:coopserve/models/service_listing.dart';
 import 'package:coopserve/models/user_role.dart';
 import 'package:coopserve/models/worker_profile.dart';
+import 'package:coopserve/models/transaction_models.dart';
 import 'package:coopserve/navigation/app_router.dart';
 
 void main() {
@@ -181,6 +186,80 @@ void main() {
     expect(find.text('Accept Booking'), findsOneWidget);
   });
 
+  testWidgets('Payment screen renders demo payment and success state', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PaymentScreen(
+          booking: _testBooking(),
+          pay: (_) async => _testPayment(),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('Demo Payment'), findsWidgets);
+    expect(find.text('Pay Now'), findsOneWidget);
+    await tester.tap(find.text('Pay Now'));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Payment Successful'), findsOneWidget);
+    expect(find.text('Transaction: MOCK-42'), findsOneWidget);
+  });
+
+  testWidgets('Invoice screen renders transaction information', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: InvoiceScreen(
+          bookingId: 42,
+          loadInvoice: (_) async => _testInvoice(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('COOPSERVE'), findsOneWidget);
+    expect(find.text('Invoice INV-42'), findsOneWidget);
+    expect(find.text('Transaction: MOCK-42'), findsOneWidget);
+  });
+
+  testWidgets('Rating screen supports star selection and submission', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: RatingScreen(
+          bookingId: 42,
+          workerName: 'Aarav Sharma',
+          submit: _fakeSubmitRating,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.byTooltip('5 stars'));
+    await tester.enterText(find.byType(TextField), 'Excellent');
+    await tester.tap(find.text('Submit Review'));
+    await tester.pump();
+    expect(find.text('Review submitted.'), findsOneWidget);
+  });
+
+  testWidgets('Booking confirmation displays payment information', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BookingConfirmationScreen(
+          booking: _testBooking(),
+          payment: _testPayment(),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('Payment: success'), findsOneWidget);
+    expect(find.text('Transaction: MOCK-42'), findsOneWidget);
+  });
+
   testWidgets('Service catalog combines search and category filters', (
     tester,
   ) async {
@@ -315,4 +394,52 @@ Future<Booking> _fakeCreateBooking({
   required String serviceAddress,
 }) async {
   return _testBooking();
+}
+
+PaymentRecord _testPayment() {
+  return PaymentRecord(
+    id: 7,
+    bookingId: 42,
+    amount: 499,
+    paymentMethod: 'mock',
+    status: 'success',
+    transactionReference: 'MOCK-42',
+    createdAt: DateTime.now(),
+  );
+}
+
+InvoiceRecord _testInvoice() {
+  return InvoiceRecord(
+    id: 4,
+    invoiceNumber: 'INV-42',
+    bookingId: 42,
+    customerName: 'Customer One',
+    workerName: 'Aarav Sharma',
+    serviceName: 'Home cleaning',
+    scheduledAt: DateTime.now().add(const Duration(days: 1)),
+    serviceAddress: '12 Cooperative Road',
+    subtotal: 499,
+    tax: 0,
+    total: 499,
+    paymentStatus: 'success',
+    transactionReference: 'MOCK-42',
+    issuedAt: DateTime.now(),
+  );
+}
+
+RatingRecord _testRating() {
+  return RatingRecord(
+    id: 3,
+    bookingId: 42,
+    rating: 5,
+    review: 'Excellent',
+    createdAt: DateTime.now(),
+  );
+}
+
+Future<RatingRecord> _fakeSubmitRating({
+  required int rating,
+  required String review,
+}) async {
+  return _testRating();
 }

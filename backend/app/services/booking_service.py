@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models.booking import Booking, BookingStatus
+from app.models.payment import PaymentStatus
 from app.models.service import Service
 from app.models.user import User, UserRole, Worker
 from app.repositories.booking_repository import (
@@ -39,6 +40,15 @@ def _summary(booking: Booking) -> BookingSummary:
         customer_name=booking.customer.user.full_name,
         worker_name=booking.worker.user.full_name if booking.worker else None,
         service_name=booking.service.name,
+        payment_id=booking.payment.id if booking.payment else None,
+        payment_status=(
+            "success"
+            if booking.payment.status == PaymentStatus.paid
+            else booking.payment.status.value
+        ) if booking.payment else None,
+        transaction_reference=booking.payment.transaction_reference
+        if booking.payment
+        else None,
     )
 
 

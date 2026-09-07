@@ -9,6 +9,9 @@ import '../features/customer/booking_screen.dart';
 import '../features/customer/booking_confirmation_screen.dart';
 import '../features/customer/booking_details_screen.dart';
 import '../features/customer/customer_bookings_screen.dart';
+import '../features/customer/invoice_screen.dart';
+import '../features/customer/payment_screen.dart';
+import '../features/customer/rating_screen.dart';
 import '../features/customer/service_catalog_screen.dart';
 import '../features/customer/service_details_screen.dart';
 import '../features/customer/worker_details_screen.dart';
@@ -17,6 +20,7 @@ import '../features/worker/worker_bookings_screen.dart';
 import '../features/admin/admin_screen.dart';
 import '../models/user_role.dart';
 import '../models/booking_models.dart';
+import '../models/payment_confirmation.dart';
 
 class AppRouter {
   // ── Route names ────────────────────────────────────────────────────────────
@@ -33,6 +37,9 @@ class AppRouter {
   static const String customerBookings = '/customer/bookings';
   static const String bookingDetails = '/bookings/details';
   static const String workerBookings = '/worker/bookings';
+  static const String payment = '/customer/payment';
+  static const String invoice = '/customer/invoice';
+  static const String rating = '/customer/rating';
   static const String worker = '/worker';
   static const String admin = '/admin';
 
@@ -96,6 +103,15 @@ class AppRouter {
         );
       case bookingConfirmation:
         final booking = settings.arguments;
+        if (booking is PaymentConfirmation) {
+          return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => BookingConfirmationScreen(
+              booking: booking.booking,
+              payment: booking.payment,
+            ),
+          );
+        }
         if (booking is! Booking) return null;
         return MaterialPageRoute(
           settings: settings,
@@ -107,6 +123,30 @@ class AppRouter {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => BookingDetailsScreen(bookingId: bookingId),
+        );
+      case payment:
+        final booking = settings.arguments;
+        if (booking is! Booking) return null;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => PaymentScreen(booking: booking),
+        );
+      case invoice:
+        final bookingId = settings.arguments;
+        if (bookingId is! int || bookingId < 1) return null;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => InvoiceScreen(bookingId: bookingId),
+        );
+      case rating:
+        final booking = settings.arguments;
+        if (booking is! Booking) return null;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => RatingScreen(
+            bookingId: booking.id,
+            workerName: booking.workerName ?? 'your worker',
+          ),
         );
       default:
         return null;

@@ -50,3 +50,6 @@ class BookingSummary(BookingResponse):
     customer_name: str
     worker_name: str | None
     service_name: str
+    payment_id: int | None = None
+    payment_status: str | None = None
+    transaction_reference: str | None = None

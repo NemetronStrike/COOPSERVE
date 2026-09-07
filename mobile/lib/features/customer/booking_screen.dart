@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/app_spacing.dart';
 import '../../core/app_text_styles.dart';
 import '../../models/booking_models.dart';
+import '../../navigation/app_router.dart';
 import '../../services/booking_service.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_card.dart';
@@ -221,7 +222,7 @@ class _BookingScreenState extends State<BookingScreen> {
       if (!mounted) return;
       Navigator.pushReplacementNamed(
         context,
-        '/customer/booking-confirmation',
+        AppRouter.payment,
         arguments: booking,
       );
     } catch (error) {

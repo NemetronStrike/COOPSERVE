@@ -127,6 +127,7 @@ class _CustomerBookingsScreenState extends State<CustomerBookingsScreen> {
               'Rs. ${booking.amount.toStringAsFixed(0)}',
               style: AppTextStyles.labelLarge(context),
             ),
+            Text('Payment: ${booking.paymentStatus ?? 'Not paid'}'),
           ],
         ),
       ),

@@ -65,6 +65,9 @@ class Booking {
   final String customerName;
   final String? workerName;
   final String serviceName;
+  final int? paymentId;
+  final String? paymentStatus;
+  final String? transactionReference;
 
   const Booking({
     required this.id,
@@ -80,6 +83,9 @@ class Booking {
     required this.customerName,
     required this.workerName,
     required this.serviceName,
+    this.paymentId,
+    this.paymentStatus,
+    this.transactionReference,
   });
 
   factory Booking.fromJson(Map<String, dynamic> json) {
@@ -105,6 +111,9 @@ class Booking {
       customerName: json['customer_name'] as String? ?? 'Customer',
       workerName: json['worker_name'] as String?,
       serviceName: json['service_name'] as String? ?? 'Service',
+      paymentId: json['payment_id'] as int?,
+      paymentStatus: json['payment_status'] as String?,
+      transactionReference: json['transaction_reference'] as String?,
     );
   }
 }

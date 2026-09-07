@@ -1,4 +1,5 @@
 import '../models/booking_models.dart';
+import '../models/transaction_models.dart';
 import 'api_client.dart';
 import 'auth_service.dart';
 
@@ -48,6 +49,59 @@ class BookingService {
       'status': _statusValue(status),
     }, token: token);
     return Booking.fromJson(response);
+  }
+
+  Future<PaymentRecord> payForBooking(int bookingId) async {
+    final token = await _authService.getToken();
+    final response = await ApiClient.post('/payments', {
+      'booking_id': bookingId,
+      'payment_method': 'mock',
+    }, token: token);
+    return PaymentRecord.fromJson(response);
+  }
+
+  Future<PaymentRecord> getPayment(int paymentId) async {
+    final token = await _authService.getToken();
+    final response = await ApiClient.get('/payments/$paymentId', token: token);
+    return PaymentRecord.fromJson(response);
+  }
+
+  Future<InvoiceRecord> getInvoice(int bookingId) async {
+    final token = await _authService.getToken();
+    final response = await ApiClient.get(
+      '/bookings/$bookingId/invoice',
+      token: token,
+    );
+    return InvoiceRecord.fromJson(response);
+  }
+
+  Future<RatingRecord?> getRating(int bookingId) async {
+    final token = await _authService.getToken();
+    try {
+      final response = await ApiClient.get(
+        '/ratings/booking/$bookingId',
+        token: token,
+      );
+      if (response.isEmpty) return null;
+      return RatingRecord.fromJson(response);
+    } on ApiException catch (error) {
+      if (error.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  Future<RatingRecord> submitRating({
+    required int bookingId,
+    required int rating,
+    required String review,
+  }) async {
+    final token = await _authService.getToken();
+    final response = await ApiClient.post('/ratings', {
+      'booking_id': bookingId,
+      'rating': rating,
+      'review': review,
+    }, token: token);
+    return RatingRecord.fromJson(response);
   }
 
   Future<List<Booking>> _getList(String path) async {

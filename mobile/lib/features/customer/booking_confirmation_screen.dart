@@ -3,13 +3,19 @@ import 'package:flutter/material.dart';
 import '../../core/app_spacing.dart';
 import '../../core/app_text_styles.dart';
 import '../../models/booking_models.dart';
+import '../../models/transaction_models.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_card.dart';
 
 class BookingConfirmationScreen extends StatelessWidget {
   final Booking booking;
+  final PaymentRecord? payment;
 
-  const BookingConfirmationScreen({super.key, required this.booking});
+  const BookingConfirmationScreen({
+    super.key,
+    required this.booking,
+    this.payment,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +61,10 @@ class BookingConfirmationScreen extends StatelessWidget {
         Text('Address: ${booking.serviceAddress ?? 'Not provided'}'),
         Text('Amount: Rs. ${booking.amount.toStringAsFixed(0)}'),
         Text('Status: ${booking.status.label}'),
+        if (payment != null) ...[
+          Text('Payment: ${payment!.status}'),
+          Text('Transaction: ${payment!.transactionReference}'),
+        ],
       ],
     );
   }
