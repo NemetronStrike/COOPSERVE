@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     app_host: str = "127.0.0.1"
     app_port: int = 8000
 
-    # CORS — comma-separated origins
+    # CORS
     cors_origins: str = "http://localhost,http://127.0.0.1,http://10.0.2.2"
 
     @property
@@ -26,9 +26,10 @@ class Settings(BaseSettings):
     # Database
     database_url: str = ""
 
-    # Security (not yet implemented)
-    secret_key: str = ""
-    access_token_expire_minutes: int = 30
+    # Security — no default; SECRET_KEY must be set in the environment
+    secret_key: str
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60 * 24  # 24 hours
 
 
 @lru_cache
