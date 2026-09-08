@@ -69,3 +69,60 @@ class AdminWorker {
     verificationStatus: json['verification_status'] as String,
   );
 }
+
+class DailyForecast {
+  final DateTime date;
+  final double predictedDemand;
+  final double availableSupply;
+  final String status;
+
+  const DailyForecast({
+    required this.date,
+    required this.predictedDemand,
+    required this.availableSupply,
+    required this.status,
+  });
+
+  factory DailyForecast.fromJson(Map<String, dynamic> json) => DailyForecast(
+        date: DateTime.parse(json['date'] as String),
+        predictedDemand: (json['predicted_demand'] as num).toDouble(),
+        availableSupply: (json['available_supply'] as num).toDouble(),
+        status: json['status'] as String,
+      );
+}
+
+class CategoryForecast {
+  final String category;
+  final List<DailyForecast> dailyForecasts;
+
+  const CategoryForecast({
+    required this.category,
+    required this.dailyForecasts,
+  });
+
+  factory CategoryForecast.fromJson(Map<String, dynamic> json) =>
+      CategoryForecast(
+        category: json['category'] as String,
+        dailyForecasts: (json['daily_forecasts'] as List<dynamic>)
+            .map((item) => DailyForecast.fromJson(item as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
+class DemandForecastResponse {
+  final DateTime generatedAt;
+  final List<CategoryForecast> forecasts;
+
+  const DemandForecastResponse({
+    required this.generatedAt,
+    required this.forecasts,
+  });
+
+  factory DemandForecastResponse.fromJson(Map<String, dynamic> json) =>
+      DemandForecastResponse(
+        generatedAt: DateTime.parse(json['generated_at'] as String),
+        forecasts: (json['forecasts'] as List<dynamic>)
+            .map((item) => CategoryForecast.fromJson(item as Map<String, dynamic>))
+            .toList(),
+      );
+}

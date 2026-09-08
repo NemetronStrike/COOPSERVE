@@ -102,6 +102,18 @@ class _AdminScreenState extends State<AdminScreen> {
             ],
           ),
         ),
+        const SizedBox(height: AppSpacing.sm),
+        AppCardOutlined(
+          onTap: () => Navigator.pushNamed(context, '/admin/forecasting'),
+          child: const Row(
+            children: [
+              Icon(Icons.insights_rounded),
+              SizedBox(width: AppSpacing.md),
+              Expanded(child: Text('Demand Forecasting')),
+              Icon(Icons.chevron_right_rounded),
+            ],
+          ),
+        ),
       ],
     );
   }

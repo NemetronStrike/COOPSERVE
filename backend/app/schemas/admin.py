@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from pydantic import BaseModel
 
 
@@ -22,3 +23,20 @@ class AdminWorkerResponse(BaseModel):
     total_jobs: int
     is_available: bool
     verification_status: str
+
+
+class DailyForecast(BaseModel):
+    date: date
+    predicted_demand: float
+    available_supply: float
+    status: str  # "shortage" | "sufficient"
+
+
+class CategoryForecast(BaseModel):
+    category: str
+    daily_forecasts: list[DailyForecast]
+
+
+class DemandForecastResponse(BaseModel):
+    generated_at: datetime
+    forecasts: list[CategoryForecast]

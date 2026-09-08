@@ -34,4 +34,12 @@ class AdminService {
     );
     return AdminWorker.fromJson(response);
   }
+
+  Future<DemandForecastResponse> getForecasting() async {
+    final response = await ApiClient.get(
+      '/admin/forecasting',
+      token: await _auth.getToken(),
+    );
+    return DemandForecastResponse.fromJson(response);
+  }
 }
