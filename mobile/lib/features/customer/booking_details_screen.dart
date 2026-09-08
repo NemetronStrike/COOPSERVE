@@ -185,6 +185,17 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             },
           ),
         ],
+        const SizedBox(height: AppSpacing.md),
+        AppButtonOutlined(
+          label: 'Report Issue',
+          onPressed: () {
+            Navigator.pushNamed(
+              context,
+              AppRouter.createComplaint,
+              arguments: booking.id,
+            );
+          },
+        ),
       ],
     );
   }

@@ -114,6 +114,18 @@ class _AdminScreenState extends State<AdminScreen> {
             ],
           ),
         ),
+        const SizedBox(height: AppSpacing.sm),
+        AppCardOutlined(
+          onTap: () => Navigator.pushNamed(context, '/admin/complaints'),
+          child: const Row(
+            children: [
+              Icon(Icons.report_problem_rounded),
+              SizedBox(width: AppSpacing.md),
+              Expanded(child: Text('Complaints Review')),
+              Icon(Icons.chevron_right_rounded),
+            ],
+          ),
+        ),
       ],
     );
   }

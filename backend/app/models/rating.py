@@ -17,9 +17,27 @@ class ComplaintStatus(str, enum.Enum):
 class ComplaintCategory(str, enum.Enum):
     service_quality = "service_quality"
     worker_behaviour = "worker_behaviour"
-    payment_issue = "payment_issue"
+    late_arrival = "late_arrival"
+    pricing_payment = "pricing_payment"
+    safety = "safety"
+    property_damage = "property_damage"
+    booking_issue = "booking_issue"
     no_show = "no_show"
     other = "other"
+
+
+class ComplaintSeverity(str, enum.Enum):
+    low = "low"
+    medium = "medium"
+    high = "high"
+    critical = "critical"
+
+
+class ComplaintUrgency(str, enum.Enum):
+    low = "low"
+    medium = "medium"
+    high = "high"
+    critical = "critical"
 
 
 class Rating(Base):
@@ -63,6 +81,11 @@ class Complaint(Base):
         Enum(ComplaintCategory), nullable=False
     )
     description: Mapped[str] = mapped_column(Text, nullable=False)
+    severity: Mapped[ComplaintSeverity | None] = mapped_column(Enum(ComplaintSeverity))
+    urgency: Mapped[ComplaintUrgency | None] = mapped_column(Enum(ComplaintUrgency))
+    summary: Mapped[str | None] = mapped_column(Text)
+    suggested_action: Mapped[str | None] = mapped_column(Text)
+    classification_source: Mapped[str | None] = mapped_column(String(50))
     status: Mapped[ComplaintStatus] = mapped_column(
         Enum(ComplaintStatus), default=ComplaintStatus.open, nullable=False, index=True
     )

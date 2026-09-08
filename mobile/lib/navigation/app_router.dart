@@ -21,6 +21,9 @@ import '../features/admin/admin_screen.dart';
 import '../features/admin/admin_workers_screen.dart';
 import '../features/admin/admin_forecasting_screen.dart';
 import '../features/notifications/notifications_screen.dart';
+import '../features/customer/complaint_create_screen.dart';
+import '../features/customer/customer_complaints_screen.dart';
+import '../features/admin/admin_complaints_screen.dart';
 import '../models/user_role.dart';
 import '../models/booking_models.dart';
 import '../models/payment_confirmation.dart';
@@ -47,7 +50,10 @@ class AppRouter {
   static const String admin = '/admin';
   static const String adminWorkers = '/admin/workers';
   static const String adminForecasting = '/admin/forecasting';
+  static const String adminComplaints = '/admin/complaints';
   static const String notifications = '/notifications';
+  static const String customerComplaints = '/customer/complaints';
+  static const String createComplaint = '/customer/complaints/create';
 
   // ── Route map ──────────────────────────────────────────────────────────────
   static Map<String, WidgetBuilder> get routes => {
@@ -61,7 +67,9 @@ class AppRouter {
     admin: (_) => const AdminScreen(),
     adminWorkers: (_) => AdminWorkersScreen(),
     adminForecasting: (_) => const AdminForecastingScreen(),
+    adminComplaints: (_) => const AdminComplaintsScreen(),
     notifications: (_) => NotificationsScreen(),
+    customerComplaints: (_) => const CustomerComplaintsScreen(),
   };
 
   // ── onGenerateRoute — handles routes that require arguments ────────────────
@@ -156,6 +164,12 @@ class AppRouter {
             bookingId: booking.id,
             workerName: booking.workerName ?? 'your worker',
           ),
+        );
+      case createComplaint:
+        final bookingId = settings.arguments as int?;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => ComplaintCreateScreen(bookingId: bookingId),
         );
       default:
         return null;

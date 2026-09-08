@@ -142,6 +142,8 @@ class _CustomerScreenState extends State<CustomerScreen> {
             ..._visibleServices.map((service) => _buildServiceCard(service)),
           const SizedBox(height: AppSpacing.lg),
           _buildBookingsCard(context),
+          const SizedBox(height: AppSpacing.sm),
+          _buildComplaintsCard(context),
         ],
       ),
     );
@@ -293,6 +295,29 @@ class _CustomerScreenState extends State<CustomerScreen> {
                 Text('My bookings', style: AppTextStyles.titleMedium(context)),
                 const SizedBox(height: AppSpacing.xs),
                 Text('Track your upcoming services', style: AppTextStyles.bodySmall(context)),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right_rounded),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildComplaintsCard(BuildContext context) {
+    return AppCardOutlined(
+      onTap: () => Navigator.pushNamed(context, AppRouter.customerComplaints),
+      child: Row(
+        children: [
+          Icon(Icons.report_problem_rounded, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('My complaints', style: AppTextStyles.titleMedium(context)),
+                const SizedBox(height: AppSpacing.xs),
+                Text('View and track your complaints', style: AppTextStyles.bodySmall(context)),
               ],
             ),
           ),

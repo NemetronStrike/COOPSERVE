@@ -28,12 +28,17 @@ def override_get_db():
     finally:
         db.close()
 
-app.dependency_overrides[get_db] = override_get_db
+
 
 class TestAIEndpoints(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        app.dependency_overrides[get_db] = override_get_db
         cls.client = TestClient(app)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        app.dependency_overrides.clear()
 
     def setUp(self) -> None:
         self.db = TestingSessionLocal()

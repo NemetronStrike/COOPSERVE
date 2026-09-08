@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.routes import admin, auth, bookings, health, notifications, payments, ratings, services, workers, ai
+from app.api.routes import admin, auth, bookings, health, notifications, payments, ratings, services, workers, ai, complaints
 
 api_router = APIRouter()
 api_router.include_router(health.router)
@@ -12,6 +12,7 @@ api_router.include_router(ratings.router)
 api_router.include_router(admin.router)
 api_router.include_router(notifications.router)
 api_router.include_router(ai.router)
+api_router.include_router(complaints.router)
 
 # Future routers:
 # api_router.include_router(bookings.router, prefix="/bookings", tags=["bookings"])
