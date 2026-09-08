@@ -12,6 +12,5 @@ def test_database_url_normalization(monkeypatch):
     
     from app.core import database
     importlib.reload(database)
-    
-    assert database.db_url == "postgresql+psycopg://user:pass@host/db"
+    assert settings.sqlalchemy_database_url == "postgresql+psycopg://user:pass@host/db"
     assert str(database.engine.url.render_as_string(hide_password=False)) == "postgresql+psycopg://user:pass@host/db"

@@ -26,6 +26,15 @@ class Settings(BaseSettings):
     # Database
     database_url: str = ""
 
+    @property
+    def sqlalchemy_database_url(self) -> str:
+        db_url = self.database_url
+        if db_url.startswith("postgres://"):
+            return db_url.replace("postgres://", "postgresql+psycopg://", 1)
+        elif db_url.startswith("postgresql://"):
+            return db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+        return db_url
+
     # Security — no default; SECRET_KEY must be set in the environment
     secret_key: str
     algorithm: str = "HS256"

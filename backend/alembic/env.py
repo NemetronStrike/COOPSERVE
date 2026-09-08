@@ -18,7 +18,7 @@ config = context.config
 # Inject DATABASE_URL from application settings (reads .env).
 settings = get_settings()
 # Escape % for configparser interpolation (e.g. %40 → %%40)
-config.set_main_option("sqlalchemy.url", settings.database_url.replace("%", "%%"))
+config.set_main_option("sqlalchemy.url", settings.sqlalchemy_database_url.replace("%", "%%"))
 
 # Set up Python logging from alembic.ini
 if config.config_file_name is not None:
